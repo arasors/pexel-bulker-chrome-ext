@@ -256,6 +256,55 @@ body {
   overflow: hidden;
 }
 
+.folder-section {
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.folder-section > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.folder-input-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.folder-input-wrapper input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.folder-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: #f0f8ff;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #2c5282;
+}
+
+.info-icon {
+  font-size: 14px;
+}
+
+.folder-info-text {
+  line-height: 1.4;
+}
+
 .page-range-section > label {
   display: block;
   font-size: 13px;

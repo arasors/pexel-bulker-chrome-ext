@@ -29,6 +29,12 @@ const translations = {
     pageEnd: "End",
     allPages: "Download all pages",
     
+    // Folder Section
+    downloadFolder: "Download Folder:",
+    folderPlaceholder: "PexelBulker",
+    changeFolder: "Change",
+    folderInfo: "Files will be saved to Downloads/[folder]/",
+    
     // Action Buttons
     scanBtn: "Scan & Download",
     pauseBtn: "⏸ Pause",
@@ -104,6 +110,12 @@ const translations = {
     pageStart: "Başlangıç",
     pageEnd: "Bitiş",
     allPages: "Tüm sayfaları indir",
+    
+    // Folder Section
+    downloadFolder: "İndirme Klasörü:",
+    folderPlaceholder: "PexelBulker",
+    changeFolder: "Değiştir",
+    folderInfo: "Dosyalar İndirilenler/[klasör]/ konumuna kaydedilecek",
     
     // Action Buttons
     scanBtn: "Tara ve İndir",
@@ -181,6 +193,12 @@ const translations = {
     pageEnd: "Fin",
     allPages: "Descargar todas las páginas",
     
+    // Folder Section
+    downloadFolder: "Carpeta de descarga:",
+    folderPlaceholder: "PexelBulker",
+    changeFolder: "Cambiar",
+    folderInfo: "Los archivos se guardarán en Descargas/[carpeta]/",
+    
     // Action Buttons
     scanBtn: "Escanear y Descargar",
     pauseBtn: "⏸ Pausar",
@@ -257,6 +275,12 @@ const translations = {
     pageEnd: "Fin",
     allPages: "Télécharger toutes les pages",
     
+    // Folder Section
+    downloadFolder: "Dossier de téléchargement:",
+    folderPlaceholder: "PexelBulker",
+    changeFolder: "Modifier",
+    folderInfo: "Les fichiers seront enregistrés dans Téléchargements/[dossier]/",
+    
     // Action Buttons
     scanBtn: "Scanner et Télécharger",
     pauseBtn: "⏸ Pause",
@@ -332,6 +356,12 @@ const translations = {
     pageStart: "开始",
     pageEnd: "结束",
     allPages: "下载所有页面",
+    
+    // Folder Section
+    downloadFolder: "下载文件夹:",
+    folderPlaceholder: "PexelBulker",
+    changeFolder: "更改",
+    folderInfo: "文件将保存到 下载/[文件夹]/",
     
     // Action Buttons
     scanBtn: "扫描并下载",

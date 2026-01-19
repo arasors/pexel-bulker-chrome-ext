@@ -82,6 +82,18 @@
       </label>
     </div>
 
+    <div class="folder-section" id="folderSection" style="display: none;">
+      <label data-i18n="downloadFolder">Download Folder:</label>
+      <div class="folder-input-wrapper">
+        <input type="text" id="folderPath" data-i18n-placeholder="folderPlaceholder" placeholder="PexelBulker" readonly>
+        <button id="changeFolderBtn" class="btn-small" data-i18n="changeFolder">Change</button>
+      </div>
+      <div class="folder-info">
+        <span class="info-icon">ℹ️</span>
+        <span class="folder-info-text" data-i18n="folderInfo">Files will be saved to Downloads/[folder]/</span>
+      </div>
+    </div>
+
     <div class="action-section">
       <button id="scanBtn" class="btn btn-success" disabled>
         <span id="scanBtnText" data-i18n="scanBtn">Scan & Download</span>

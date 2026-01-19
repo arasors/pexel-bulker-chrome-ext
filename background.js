@@ -5,6 +5,7 @@ let isDownloading = false;
 let isPaused = false;
 let isCancelled = false;
 let currentDownloadIndex = 0;
+let currentDownloadFolder = 'PexelBulker';
 let downloadStats = {
   scannedPages: 0,
   totalPages: 0,
@@ -22,7 +23,8 @@ async function saveState() {
     downloadStats: downloadStats,
     isDownloading: isDownloading,
     isPaused: isPaused,
-    currentDownloadIndex: currentDownloadIndex
+    currentDownloadIndex: currentDownloadIndex,
+    currentDownloadFolder: currentDownloadFolder
   });
 }
 
@@ -33,7 +35,8 @@ async function loadState() {
     'downloadStats',
     'isDownloading',
     'isPaused',
-    'currentDownloadIndex'
+    'currentDownloadIndex',
+    'currentDownloadFolder'
   ]);
   
   if (data.downloadQueue) downloadQueue = data.downloadQueue;
@@ -41,6 +44,7 @@ async function loadState() {
   if (data.isDownloading !== undefined) isDownloading = data.isDownloading;
   if (data.isPaused !== undefined) isPaused = data.isPaused;
   if (data.currentDownloadIndex !== undefined) currentDownloadIndex = data.currentDownloadIndex;
+  if (data.currentDownloadFolder) currentDownloadFolder = data.currentDownloadFolder;
 }
 
 // Mesaj dinleyici
@@ -75,7 +79,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Toplu indirme işlemini başlat
 async function startBulkDownload(config) {
-  const { apiBaseUrl, startPage, endPage, quality, tabId } = config;
+  const { apiBaseUrl, startPage, endPage, quality, downloadFolder, tabId } = config;
+  currentDownloadFolder = downloadFolder || 'PexelBulker';
   
   // Reset state
   isCancelled = false;
@@ -246,7 +251,7 @@ async function startDownloads() {
     currentDownloadIndex = i;
     
     try {
-      await downloadVideo(item);
+      await downloadVideo(item, currentDownloadFolder);
       downloadStats.downloadedCount++;
       updateProgress(`Downloading video: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
       sendLogToPopup(`Downloaded: ${item.filename}`, 'success');
@@ -310,11 +315,11 @@ function cancelDownload() {
 }
 
 // Video indir
-function downloadVideo(item) {
+function downloadVideo(item, folder = 'PexelBulker') {
   return new Promise((resolve, reject) => {
     chrome.downloads.download({
       url: item.url,
-      filename: `PexelBulker/${item.filename}`,
+      filename: `${folder}/${item.filename}`,
       saveAs: false,
       conflictAction: 'uniquify'
     }, (downloadId) => {

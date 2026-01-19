@@ -5,6 +5,61 @@ All notable changes to PexelBulker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-19
+
+### 🎯 Added - Custom Download Folder
+
+#### New Features
+- **Customizable Download Folder**
+  - Users can now choose their own folder name
+  - Files saved to Downloads/[custom-folder]/
+  - Folder name persists across sessions
+  - "Change" button to update folder anytime
+  - Sanitizes folder name (removes invalid characters)
+  
+- **UI Improvements**
+  - New "Download Folder" section in settings
+  - Info tooltip showing save location
+  - Folder name displayed before download starts
+  - All 5 languages supported
+
+#### Problem Solved
+- Fixed issue with Chrome's "Ask where to save each file" setting
+- Bulk downloads now work even if browser asks for location
+- Extension always uses specified folder (no dialogs)
+- Prevents download interruptions
+
+#### Technical
+- Folder preference saved in `chrome.storage.local`
+- Folder name passed to background script
+- State persistence includes folder info
+- Invalid characters automatically replaced with `-`
+
+### Changed
+- Version bumped to 1.2.0
+- Form sections now include folder selector
+- Hide/show logic updated for new section
+
+---
+
+## [1.1.1] - 2026-01-19
+
+### 🐛 Fixed - Detect URL Button
+
+#### Bug Fixes
+- Fixed "Detect URL" button not working
+- DOM elements now properly initialized in DOMContentLoaded
+- Added null checks for all DOM elements
+- Added translations loading verification
+- Added debug console logs
+
+#### Technical
+- Event listeners added after DOM ready
+- Safety checks for undefined translations
+- Better error messages for debugging
+
+---
+
 ## [1.1.0] - 2026-01-19
 
 ### 🌍 Added - Multi-Language Support!

@@ -82,6 +82,9 @@ let detectBtn;
 let infoSection;
 let qualitySection;
 let pageRangeSection;
+let folderSection;
+let folderPathInput;
+let changeFolderBtn;
 let scanBtn;
 let progressSection;
 let logSection;
@@ -89,6 +92,9 @@ let allPagesCheckbox;
 let startPageInput;
 let endPageInput;
 let langSelect;
+
+// Download folder setting
+let downloadFolder = 'PexelBulker';
 
 // Detect URL and fetch info
 async function detectAndFetchInfo() {
@@ -183,6 +189,7 @@ async function fetchFirstPage() {
           infoSection.style.display = 'block';
           qualitySection.style.display = 'block';
           pageRangeSection.style.display = 'block';
+          if (folderSection) folderSection.style.display = 'block';
           scanBtn.disabled = false;
           
           addLog(translations[currentLang].logFoundVideos
@@ -232,6 +239,7 @@ async function startScanning() {
       startPage: startPage,
       endPage: endPage,
       quality: quality,
+      downloadFolder: downloadFolder,
       tabId: tab.id
     }
   }, () => {
@@ -248,6 +256,7 @@ function hideFormSections() {
   infoSection.style.display = 'none';
   qualitySection.style.display = 'none';
   pageRangeSection.style.display = 'none';
+  if (folderSection) folderSection.style.display = 'none';
 }
 
 // Show form sections when completed/cancelled
@@ -256,6 +265,37 @@ function showFormSections() {
   infoSection.style.display = 'block';
   qualitySection.style.display = 'block';
   pageRangeSection.style.display = 'block';
+  if (folderSection) folderSection.style.display = 'block';
+}
+
+// Change folder name
+function changeFolderName() {
+  const currentLang = localStorage.getItem('pexelBulkerLang') || 'en';
+  const prompts = {
+    en: 'Enter folder name (files will be saved to Downloads/[folder]/):',
+    tr: 'Klasör adını girin (dosyalar İndirilenler/[klasör]/ konumuna kaydedilecek):',
+    es: 'Ingrese el nombre de la carpeta (los archivos se guardarán en Descargas/[carpeta]/):',
+    fr: 'Entrez le nom du dossier (les fichiers seront enregistrés dans Téléchargements/[dossier]/):',
+    zh: '输入文件夹名称（文件将保存到 下载/[文件夹]/）:'
+  };
+  
+  const newFolder = prompt(prompts[currentLang] || prompts.en, downloadFolder);
+  
+  if (newFolder && newFolder.trim()) {
+    // Sanitize folder name (remove invalid characters)
+    const sanitized = newFolder.trim().replace(/[<>:"/\\|?*]/g, '-');
+    downloadFolder = sanitized;
+    
+    // Save to storage
+    chrome.storage.local.set({ downloadFolder: sanitized });
+    
+    // Update input
+    if (folderPathInput) {
+      folderPathInput.value = sanitized;
+    }
+    
+    addLog(`Download folder changed to: ${sanitized}`, 'success');
+  }
 }
 
 // Background script'ten gelen mesajları dinle
@@ -428,6 +468,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   infoSection = document.getElementById('infoSection');
   qualitySection = document.getElementById('qualitySection');
   pageRangeSection = document.getElementById('pageRangeSection');
+  folderSection = document.getElementById('folderSection');
+  folderPathInput = document.getElementById('folderPath');
+  changeFolderBtn = document.getElementById('changeFolderBtn');
   scanBtn = document.getElementById('scanBtn');
   progressSection = document.getElementById('progressSection');
   logSection = document.getElementById('logSection');
@@ -437,6 +480,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   langSelect = document.getElementById('langSelect');
   
   console.log('DOM elements initialized');
+  
+  // Load saved folder setting
+  chrome.storage.local.get(['downloadFolder'], (result) => {
+    if (result.downloadFolder) {
+      downloadFolder = result.downloadFolder;
+      if (folderPathInput) {
+        folderPathInput.value = downloadFolder;
+      }
+    }
+  });
   
   // Add event listeners
   if (detectBtn) {
@@ -463,6 +516,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     langSelect.addEventListener('change', (e) => {
       changeLanguage(e.target.value);
     });
+  }
+  
+  if (changeFolderBtn) {
+    changeFolderBtn.addEventListener('click', changeFolderName);
   }
   
   // Initialize page range inputs state
