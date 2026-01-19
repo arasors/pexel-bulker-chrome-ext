@@ -154,9 +154,6 @@ async function startScanning() {
       quality: quality,
       tabId: tab.id
     }
-  }, () => {
-    // İşlem başladı, butonları güncelle
-    updateControlButtons(false, true);
   });
 }
 
@@ -164,12 +161,6 @@ async function startScanning() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'updateProgress') {
     updateProgress(request.data);
-    // Aktif işlem varsa butonları güncelle
-    chrome.runtime.sendMessage({ action: 'getState' }, (response) => {
-      if (response) {
-        updateControlButtons(response.isPaused, response.isDownloading);
-      }
-    });
   } else if (request.action === 'addLog') {
     addLog(request.message, request.type);
   } else if (request.action === 'scanComplete') {
@@ -181,85 +172,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function updateProgress(data) {
   const { scannedPages, totalPages, downloadedCount, totalDownloads, currentStatus } = data;
   
-  document.getElementById('scannedPages').textContent = scannedPages || 0;
-  document.getElementById('totalPagesToScan').textContent = totalPages || 0;
-  document.getElementById('downloadedCount').textContent = downloadedCount || 0;
-  document.getElementById('totalDownloads').textContent = totalDownloads || 0;
+  document.getElementById('scannedPages').textContent = scannedPages;
+  document.getElementById('totalPagesToScan').textContent = totalPages;
+  document.getElementById('downloadedCount').textContent = downloadedCount;
+  document.getElementById('totalDownloads').textContent = totalDownloads;
+  document.getElementById('progressText').textContent = currentStatus;
   
-  if (currentStatus) {
-    document.getElementById('progressText').textContent = currentStatus;
-  }
+  const scanProgress = (scannedPages / totalPages) * 50;
+  const downloadProgress = totalDownloads > 0 ? (downloadedCount / totalDownloads) * 50 : 0;
+  const totalProgress = scanProgress + downloadProgress;
   
-  if (totalPages > 0) {
-    const scanProgress = (scannedPages / totalPages) * 50;
-    const downloadProgress = totalDownloads > 0 ? (downloadedCount / totalDownloads) * 50 : 0;
-    const totalProgress = scanProgress + downloadProgress;
-    
-    document.getElementById('progressFill').style.width = totalProgress + '%';
-  }
-}
-
-// Kontrol butonlarını güncelle
-function updateControlButtons(isPaused, isDownloading) {
-  const scanBtnText = document.getElementById('scanBtnText');
-  
-  if (isDownloading) {
-    if (isPaused) {
-      scanBtn.textContent = '▶ Devam Et';
-      scanBtn.disabled = false;
-      scanBtn.onclick = resumeDownload;
-    } else {
-      scanBtn.textContent = '⏸ Duraklat';
-      scanBtn.disabled = false;
-      scanBtn.onclick = pauseDownload;
-    }
-    
-    // İptal butonu göster
-    if (!document.getElementById('cancelBtn')) {
-      const cancelBtn = document.createElement('button');
-      cancelBtn.id = 'cancelBtn';
-      cancelBtn.className = 'btn btn-danger';
-      cancelBtn.textContent = '✕ İptal Et';
-      cancelBtn.onclick = cancelDownload;
-      scanBtn.parentElement.appendChild(cancelBtn);
-    }
-  } else {
-    scanBtn.textContent = 'Tara ve İndir';
-    scanBtn.onclick = startScanning;
-    
-    // İptal butonunu kaldır
-    const cancelBtn = document.getElementById('cancelBtn');
-    if (cancelBtn) {
-      cancelBtn.remove();
-    }
-  }
-}
-
-// İndirmeyi duraklat
-function pauseDownload() {
-  chrome.runtime.sendMessage({ action: 'pauseDownload' }, () => {
-    addLog('İndirme duraklatıldı.', 'info');
-    updateControlButtons(true, true);
-  });
-}
-
-// İndirmeye devam et
-function resumeDownload() {
-  chrome.runtime.sendMessage({ action: 'resumeDownload' }, () => {
-    addLog('İndirme devam ediyor...', 'success');
-    updateControlButtons(false, true);
-  });
-}
-
-// İndirmeyi iptal et
-function cancelDownload() {
-  if (confirm('İndirmeyi iptal etmek istediğinize emin misiniz?')) {
-    chrome.runtime.sendMessage({ action: 'cancelDownload' }, () => {
-      addLog('İndirme iptal edildi.', 'info');
-      isScanning = false;
-      updateControlButtons(false, false);
-    });
-  }
+  document.getElementById('progressFill').style.width = totalProgress + '%';
 }
 
 // Tarama tamamlandı
@@ -291,28 +214,6 @@ function clearLog() {
 }
 
 // Sayfa yüklendiğinde
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   addLog('PexelBulker hazır. URL tespiti için butona tıklayın.', 'info');
-  
-  // State'i geri yükle
-  await restoreState();
 });
-
-// State'i geri yükle
-async function restoreState() {
-  chrome.runtime.sendMessage({ action: 'getState' }, (response) => {
-    if (response && response.stats && response.stats.isActive) {
-      // Aktif bir işlem var
-      addLog('Devam eden işlem tespit edildi.', 'info');
-      
-      progressSection.style.display = 'block';
-      logSection.style.display = 'block';
-      
-      // Progress'i güncelle
-      updateProgress(response.stats);
-      
-      // Butonları güncelle
-      updateControlButtons(response.isPaused, response.isDownloading);
-    }
-  });
-}

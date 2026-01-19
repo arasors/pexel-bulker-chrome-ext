@@ -2,48 +2,15 @@
 
 let downloadQueue = [];
 let isDownloading = false;
-let isPaused = false;
-let isCancelled = false;
-let currentDownloadIndex = 0;
 let downloadStats = {
   scannedPages: 0,
   totalPages: 0,
   downloadedCount: 0,
   totalDownloads: 0,
-  failed: 0,
-  isActive: false,
-  isPaused: false
+  failed: 0
 };
 
-// State'i storage'a kaydet
-async function saveState() {
-  await chrome.storage.local.set({
-    downloadQueue: downloadQueue,
-    downloadStats: downloadStats,
-    isDownloading: isDownloading,
-    isPaused: isPaused,
-    currentDownloadIndex: currentDownloadIndex
-  });
-}
-
-// State'i storage'dan yükle
-async function loadState() {
-  const data = await chrome.storage.local.get([
-    'downloadQueue',
-    'downloadStats',
-    'isDownloading',
-    'isPaused',
-    'currentDownloadIndex'
-  ]);
-  
-  if (data.downloadQueue) downloadQueue = data.downloadQueue;
-  if (data.downloadStats) downloadStats = data.downloadStats;
-  if (data.isDownloading !== undefined) isDownloading = data.isDownloading;
-  if (data.isPaused !== undefined) isPaused = data.isPaused;
-  if (data.currentDownloadIndex !== undefined) currentDownloadIndex = data.currentDownloadIndex;
-}
-
-// Mesaj dinleyici
+// Cookie'leri al
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getCookies') {
     chrome.cookies.getAll({ domain: '.pexels.com' }, (cookies) => {
@@ -53,59 +20,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'startBulkDownload') {
     startBulkDownload(request.data);
     sendResponse({ success: true });
-  } else if (request.action === 'pauseDownload') {
-    pauseDownload();
-    sendResponse({ success: true });
-  } else if (request.action === 'resumeDownload') {
-    resumeDownload();
-    sendResponse({ success: true });
-  } else if (request.action === 'cancelDownload') {
-    cancelDownload();
-    sendResponse({ success: true });
-  } else if (request.action === 'getState') {
-    sendResponse({
-      stats: downloadStats,
-      isPaused: isPaused,
-      isDownloading: isDownloading,
-      queueLength: downloadQueue.length
-    });
   }
-  return true;
 });
 
 // Toplu indirme işlemini başlat
 async function startBulkDownload(config) {
   const { apiBaseUrl, startPage, endPage, quality, tabId } = config;
   
-  // Reset state
-  isCancelled = false;
-  isPaused = false;
-  currentDownloadIndex = 0;
-  
   downloadStats = {
     scannedPages: 0,
     totalPages: endPage - startPage + 1,
     downloadedCount: 0,
     totalDownloads: 0,
-    failed: 0,
-    isActive: true,
-    isPaused: false
+    failed: 0
   };
   
   downloadQueue = [];
-  await saveState();
   
   sendLogToPopup('Sayfalar taranıyor...', 'info');
   updateProgress('Sayfalar taranıyor...');
   
   // Tüm sayfaları tara
   for (let page = startPage; page <= endPage; page++) {
-    if (isCancelled) {
-      sendLogToPopup('Tarama iptal edildi.', 'info');
-      break;
-    }
-    
-    const url = `${apiBaseUrl}&page=${page}&per_page=80`;
+    const url = `${apiBaseUrl}&page=${page}&per_page=80`; // Her sayfada daha fazla sonuç al
     
     try {
       const data = await fetchApiPage(url, tabId);
@@ -124,9 +61,8 @@ async function startBulkDownload(config) {
         downloadStats.scannedPages++;
         downloadStats.totalDownloads = downloadQueue.length;
         updateProgress(`Sayfa ${page}/${endPage} tarandı`);
-        await saveState();
         
-        // Rate limiting
+        // Rate limiting - her istekten sonra kısa bir bekleme
         await sleep(500);
       }
     } catch (error) {
@@ -134,23 +70,16 @@ async function startBulkDownload(config) {
     }
   }
   
-  if (!isCancelled) {
-    sendLogToPopup(`Tarama tamamlandı! ${downloadQueue.length} video bulundu.`, 'success');
-    
-    // İndirmeleri başlat
-    if (downloadQueue.length > 0) {
-      startDownloads();
-    } else {
-      downloadStats.isActive = false;
-      await saveState();
-      chrome.runtime.sendMessage({
-        action: 'scanComplete',
-        data: { totalDownloads: 0 }
-      });
-    }
+  sendLogToPopup(`Tarama tamamlandı! ${downloadQueue.length} video bulundu.`, 'success');
+  
+  // İndirmeleri başlat
+  if (downloadQueue.length > 0) {
+    startDownloads();
   } else {
-    downloadStats.isActive = false;
-    await saveState();
+    chrome.runtime.sendMessage({
+      action: 'scanComplete',
+      data: { totalDownloads: 0 }
+    });
   }
 }
 
@@ -227,47 +156,25 @@ async function startDownloads() {
   isDownloading = true;
   sendLogToPopup(`${downloadQueue.length} video indiriliyor...`, 'info');
   updateProgress('Videolar indiriliyor...');
-  await saveState();
   
   // Chrome'un indirme limitlerine uygun olarak sırayla indir
-  for (let i = currentDownloadIndex; i < downloadQueue.length; i++) {
-    // Duraklat kontrolü
-    while (isPaused && !isCancelled) {
-      await sleep(1000);
-    }
-    
-    // İptal kontrolü
-    if (isCancelled) {
-      sendLogToPopup('İndirme iptal edildi.', 'info');
-      break;
-    }
-    
-    const item = downloadQueue[i];
-    currentDownloadIndex = i;
-    
+  for (const item of downloadQueue) {
     try {
       await downloadVideo(item);
       downloadStats.downloadedCount++;
       updateProgress(`Video indiriliyor: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
       sendLogToPopup(`İndirildi: ${item.filename}`, 'success');
-      await saveState();
       
       // Rate limiting
       await sleep(1000);
     } catch (error) {
       downloadStats.failed++;
       sendLogToPopup(`İndirme hatası (${item.filename}): ${error.message}`, 'error');
-      await saveState();
     }
   }
   
   isDownloading = false;
-  downloadStats.isActive = false;
-  await saveState();
-  
-  if (!isCancelled) {
-    sendLogToPopup(`İndirme tamamlandı! Başarılı: ${downloadStats.downloadedCount}, Başarısız: ${downloadStats.failed}`, 'success');
-  }
+  sendLogToPopup(`İndirme tamamlandı! Başarılı: ${downloadStats.downloadedCount}, Başarısız: ${downloadStats.failed}`, 'success');
   
   chrome.runtime.sendMessage({
     action: 'scanComplete',
@@ -277,36 +184,6 @@ async function startDownloads() {
       failed: downloadStats.failed
     }
   });
-}
-
-// İndirmeyi duraklat
-function pauseDownload() {
-  isPaused = true;
-  downloadStats.isPaused = true;
-  saveState();
-  sendLogToPopup('İndirme duraklatıldı.', 'info');
-  updateProgress('Duraklatıldı');
-}
-
-// İndirmeye devam et
-function resumeDownload() {
-  isPaused = false;
-  downloadStats.isPaused = false;
-  saveState();
-  sendLogToPopup('İndirme devam ediyor.', 'success');
-  updateProgress(`Video indiriliyor: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
-}
-
-// İndirmeyi iptal et
-function cancelDownload() {
-  isCancelled = true;
-  isPaused = false;
-  isDownloading = false;
-  downloadStats.isActive = false;
-  downloadStats.isPaused = false;
-  saveState();
-  sendLogToPopup('İndirme iptal edildi.', 'info');
-  updateProgress('İptal edildi');
 }
 
 // Video indir
@@ -320,34 +197,22 @@ function downloadVideo(item) {
     }, (downloadId) => {
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
-        return;
-      }
-      
-      if (!downloadId) {
-        reject(new Error('İndirme ID alınamadı'));
-        return;
-      }
-      
-      // İndirme durumunu takip et
-      const listener = (delta) => {
-        if (delta.id === downloadId && delta.state) {
-          if (delta.state.current === 'complete') {
-            chrome.downloads.onChanged.removeListener(listener);
-            resolve(downloadId);
-          } else if (delta.state.current === 'interrupted') {
-            chrome.downloads.onChanged.removeListener(listener);
-            reject(new Error('İndirme kesildi'));
+      } else {
+        // İndirme durumunu takip et
+        const listener = (delta) => {
+          if (delta.id === downloadId && delta.state) {
+            if (delta.state.current === 'complete') {
+              chrome.downloads.onChanged.removeListener(listener);
+              resolve(downloadId);
+            } else if (delta.state.current === 'interrupted') {
+              chrome.downloads.onChanged.removeListener(listener);
+              reject(new Error('İndirme kesildi'));
+            }
           }
-        }
-      };
-      
-      chrome.downloads.onChanged.addListener(listener);
-      
-      // 30 saniye timeout ekle
-      setTimeout(() => {
-        chrome.downloads.onChanged.removeListener(listener);
-        resolve(downloadId); // Timeout olsa bile başarılı say
-      }, 30000);
+        };
+        
+        chrome.downloads.onChanged.addListener(listener);
+      }
     });
   });
 }
