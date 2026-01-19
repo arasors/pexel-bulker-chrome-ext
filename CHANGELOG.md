@@ -5,6 +5,50 @@ All notable changes to PexelBulker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-19
+
+### 🌍 Added - Multi-Language Support!
+
+#### New Features
+- **5 Languages Support**
+  - 🇬🇧 English
+  - 🇹🇷 Turkish (Türkçe)
+  - 🇪🇸 Spanish (Español)
+  - 🇫🇷 French (Français)
+  - 🇨🇳 Chinese (中文)
+
+- **Language Selector**
+  - Dropdown in extension popup (top-right)
+  - Instant language switching
+  - Automatic browser language detection
+  - Persistent language preference
+
+- **Fully Translated**
+  - All UI elements (52 translation keys)
+  - Button labels and tooltips
+  - Log messages and notifications
+  - Error messages and confirmations
+  - Progress indicators
+  - Input placeholders
+
+#### Technical
+- New `translations.js` with all language strings
+- Dynamic translation system with `data-i18n` attributes
+- Language preference saved in `chrome.storage.local`
+- Support for variable replacement in messages (e.g., `{userId}`, `{pages}`)
+
+#### Documentation
+- New `MULTILANGUAGE.md` - Complete multi-language guide
+- Translation guidelines for contributors
+- Instructions for adding new languages
+
+### Changed
+- Manifest version bumped to 1.1.0
+- Description updated to mention multi-language support
+- README updated with language information
+
+---
+
 ## [1.0.0] - 2026-01-19
 
 ### 🎉 Initial Release

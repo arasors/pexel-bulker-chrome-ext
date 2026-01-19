@@ -1,9 +1,20 @@
 # 🎬 PexelBulker
 
-Bulk video downloader Chrome extension for Pexels.
+Bulk video downloader Chrome extension for Pexels with **multi-language support**!
+
+## 🌍 Languages Supported
+
+- 🇬🇧 **English**
+- 🇹🇷 **Turkish** (Türkçe)
+- 🇪🇸 **Spanish** (Español)
+- 🇫🇷 **French** (Français)
+- 🇨🇳 **Chinese** (中文)
+
+*Change language anytime from the extension popup!*
 
 ## Features
 
+✅ **5 Languages** - English, Turkish, Spanish, French, Chinese  
 ✅ Bulk download all videos from Pexels user pages  
 ✅ Automatic page scanning and pagination management  
 ✅ Quality options (UHD, HD, SD)  

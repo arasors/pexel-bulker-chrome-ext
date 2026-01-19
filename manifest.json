@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "PexelBulker",
-  "version": "1.0.0",
-  "description": "Bulk video downloader for Pexels - Download multiple videos with quality selection and progress tracking",
+  "version": "1.1.0",
+  "description": "Bulk video downloader for Pexels with multi-language support (EN/TR/ES/FR/ZH) - Download videos with quality selection",
   "permissions": [
     "downloads",
     "storage",
@@ -37,5 +37,11 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["translations.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

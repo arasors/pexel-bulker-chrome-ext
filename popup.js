@@ -4,6 +4,63 @@ let apiBaseUrl = '';
 let totalPages = 0;
 let totalResults = 0;
 let isScanning = false;
+let currentLang = 'en';
+
+// Initialize language
+function initLanguage() {
+  // Load saved language or use browser language
+  chrome.storage.local.get(['language'], (result) => {
+    if (result.language) {
+      currentLang = result.language;
+    } else {
+      // Try to detect browser language
+      const browserLang = navigator.language.split('-')[0];
+      if (translations[browserLang]) {
+        currentLang = browserLang;
+      }
+    }
+    
+    // Set language selector
+    document.getElementById('langSelect').value = currentLang;
+    
+    // Apply translations
+    applyTranslations();
+  });
+}
+
+// Apply translations to page
+function applyTranslations() {
+  const lang = currentLang;
+  
+  // Update all elements with data-i18n attribute
+  document.querySelectorAll('[data-i18n]').forEach(element => {
+    const key = element.getAttribute('data-i18n');
+    if (translations[lang] && translations[lang][key]) {
+      element.textContent = translations[lang][key];
+    }
+  });
+  
+  // Update placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+    const key = element.getAttribute('data-i18n-placeholder');
+    if (translations[lang] && translations[lang][key]) {
+      element.placeholder = translations[lang][key];
+    }
+  });
+}
+
+// Change language
+function changeLanguage(lang) {
+  currentLang = lang;
+  chrome.storage.local.set({ language: lang });
+  applyTranslations();
+  
+  // Re-add initial log with new language
+  if (document.getElementById('logContent').children.length === 1) {
+    clearLog();
+    addLog(translations[lang].logReady, 'info');
+  }
+}
 
 // DOM elementleri
 const apiUrlInput = document.getElementById('apiUrl');
@@ -17,6 +74,7 @@ const logSection = document.getElementById('logSection');
 const allPagesCheckbox = document.getElementById('allPages');
 const startPageInput = document.getElementById('startPage');
 const endPageInput = document.getElementById('endPage');
+const langSelect = document.getElementById('langSelect');
 
 // Event listeners
 detectBtn.addEventListener('click', detectAndFetchInfo);
@@ -26,29 +84,32 @@ allPagesCheckbox.addEventListener('change', (e) => {
   startPageInput.disabled = e.target.checked;
   endPageInput.disabled = e.target.checked;
 });
+langSelect.addEventListener('change', (e) => {
+  changeLanguage(e.target.value);
+});
 
 // Detect URL and fetch info
 async function detectAndFetchInfo() {
-  addLog('Detecting URL...', 'info');
+  addLog(translations[currentLang].logDetecting, 'info');
   detectBtn.disabled = true;
-  detectBtn.textContent = 'Detecting...';
+  detectBtn.textContent = translations[currentLang].detectingBtn;
   
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
     if (!tab.url.includes('pexels.com')) {
-      addLog('Error: You are not on Pexels.com!', 'error');
+      addLog(translations[currentLang].logNotPexels, 'error');
       detectBtn.disabled = false;
-      detectBtn.textContent = 'Detect URL';
+      detectBtn.textContent = translations[currentLang].detectBtn;
       return;
     }
     
     // Send message to content script
     chrome.tabs.sendMessage(tab.id, { action: 'getUserIdFromPage' }, async (response) => {
       if (chrome.runtime.lastError) {
-        addLog('Failed to get page info. Please refresh the page and try again.', 'error');
+        addLog(translations[currentLang].logPageInfoFailed, 'error');
         detectBtn.disabled = false;
-        detectBtn.textContent = 'Detect URL';
+        detectBtn.textContent = translations[currentLang].detectBtn;
         return;
       }
       
@@ -58,7 +119,7 @@ async function detectAndFetchInfo() {
         apiBaseUrl = `https://www.pexels.com/${locale}/api/v3/users/${response.userId}/media/recent?type=videos&seo_tags=true`;
         apiUrlInput.value = apiBaseUrl + '&page=1&per_page=12';
         
-        addLog(`User ID: ${response.userId}`, 'success');
+        addLog(translations[currentLang].logUserIdFound.replace('{userId}', response.userId), 'success');
         
         // Fetch first page
         await fetchFirstPage();
@@ -66,26 +127,26 @@ async function detectAndFetchInfo() {
         // Try to extract user ID from URL manually
         const match = tab.url.match(/pexels\.com\/[a-z-]+\/@([^\/]+)/);
         if (match) {
-          addLog('User ID could not be detected automatically. Manual API URL required.', 'error');
-          addLog('You can copy the API URL from the Network tab.', 'info');
+          addLog(translations[currentLang].logUserIdFailed, 'error');
+          addLog(translations[currentLang].logNetworkTab, 'info');
         } else {
-          addLog('You must be on a user\'s media page.', 'error');
+          addLog(translations[currentLang].logUserPage, 'error');
         }
       }
       
       detectBtn.disabled = false;
-      detectBtn.textContent = 'Detect URL';
+      detectBtn.textContent = translations[currentLang].detectBtn;
     });
   } catch (error) {
     addLog(`Error: ${error.message}`, 'error');
     detectBtn.disabled = false;
-    detectBtn.textContent = 'Detect URL';
+    detectBtn.textContent = translations[currentLang].detectBtn;
   }
 }
 
 // Fetch first page and get pagination info
 async function fetchFirstPage() {
-  addLog('Fetching first page info...', 'info');
+  addLog(translations[currentLang].logFetchingFirst, 'info');
   
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -93,7 +154,7 @@ async function fetchFirstPage() {
     
     chrome.tabs.sendMessage(tab.id, { action: 'fetchApi', url: testUrl }, (response) => {
       if (chrome.runtime.lastError) {
-        addLog('API call failed. Please refresh the page and try again.', 'error');
+        addLog(translations[currentLang].logApiFailed, 'error');
         return;
       }
       
@@ -113,12 +174,14 @@ async function fetchFirstPage() {
           pageRangeSection.style.display = 'block';
           scanBtn.disabled = false;
           
-          addLog(`Found ${totalPages} pages with ${totalResults} videos!`, 'success');
+          addLog(translations[currentLang].logFoundVideos
+            .replace('{pages}', totalPages)
+            .replace('{videos}', totalResults), 'success');
         } else {
-          addLog('Could not get pagination info.', 'error');
+          addLog(translations[currentLang].logPaginationFailed, 'error');
         }
       } else {
-        addLog(`API error: ${response.error}`, 'error');
+        addLog(translations[currentLang].logApiError.replace('{error}', response.error), 'error');
       }
     });
   } catch (error) {
@@ -140,7 +203,10 @@ async function startScanning() {
   const startPage = allPages ? 1 : parseInt(startPageInput.value) || 1;
   const endPage = allPages ? totalPages : parseInt(endPageInput.value) || totalPages;
   
-  addLog(`Starting scan: pages ${startPage}-${endPage}, quality: ${quality}`, 'info');
+  addLog(translations[currentLang].logScanStarting
+    .replace('{start}', startPage)
+    .replace('{end}', endPage)
+    .replace('{quality}', quality), 'info');
   
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   
@@ -205,11 +271,11 @@ function updateControlButtons(isPaused, isDownloading) {
   
   if (isDownloading) {
     if (isPaused) {
-      scanBtn.textContent = '▶ Resume';
+      scanBtn.textContent = translations[currentLang].resumeBtn;
       scanBtn.disabled = false;
       scanBtn.onclick = resumeDownload;
     } else {
-      scanBtn.textContent = '⏸ Pause';
+      scanBtn.textContent = translations[currentLang].pauseBtn;
       scanBtn.disabled = false;
       scanBtn.onclick = pauseDownload;
     }
@@ -219,12 +285,12 @@ function updateControlButtons(isPaused, isDownloading) {
       const cancelBtn = document.createElement('button');
       cancelBtn.id = 'cancelBtn';
       cancelBtn.className = 'btn btn-danger';
-      cancelBtn.textContent = '✕ Cancel';
+      cancelBtn.textContent = translations[currentLang].cancelBtn;
       cancelBtn.onclick = cancelDownload;
       scanBtn.parentElement.appendChild(cancelBtn);
     }
   } else {
-    scanBtn.textContent = 'Scan & Download';
+    scanBtn.textContent = translations[currentLang].scanBtn;
     scanBtn.onclick = startScanning;
     
     // Remove cancel button
@@ -238,7 +304,7 @@ function updateControlButtons(isPaused, isDownloading) {
 // Pause download
 function pauseDownload() {
   chrome.runtime.sendMessage({ action: 'pauseDownload' }, () => {
-    addLog('Download paused.', 'info');
+    addLog(translations[currentLang].logPaused, 'info');
     updateControlButtons(true, true);
   });
 }
@@ -246,16 +312,16 @@ function pauseDownload() {
 // Resume download
 function resumeDownload() {
   chrome.runtime.sendMessage({ action: 'resumeDownload' }, () => {
-    addLog('Download resumed...', 'success');
+    addLog(translations[currentLang].logResumed, 'success');
     updateControlButtons(false, true);
   });
 }
 
 // Cancel download
 function cancelDownload() {
-  if (confirm('Are you sure you want to cancel the download?')) {
+  if (confirm(translations[currentLang].logCancelConfirm)) {
     chrome.runtime.sendMessage({ action: 'cancelDownload' }, () => {
-      addLog('Download cancelled.', 'info');
+      addLog(translations[currentLang].logCancelled, 'info');
       isScanning = false;
       updateControlButtons(false, false);
     });
@@ -266,10 +332,10 @@ function cancelDownload() {
 function onScanComplete(data) {
   isScanning = false;
   scanBtn.disabled = false;
-  scanBtn.textContent = 'Scan & Download';
+  scanBtn.textContent = translations[currentLang].scanBtn;
   
-  addLog(`Scan complete! ${data.totalDownloads} videos added to download queue.`, 'success');
-  document.getElementById('progressText').textContent = 'Completed!';
+  addLog(translations[currentLang].logScanComplete.replace('{count}', data.totalDownloads), 'success');
+  document.getElementById('progressText').textContent = translations[currentLang].progressCompleted;
 }
 
 // Add log
@@ -292,7 +358,13 @@ function clearLog() {
 
 // When page loads
 document.addEventListener('DOMContentLoaded', async () => {
-  addLog('PexelBulker ready. Click the button to detect URL.', 'info');
+  // Initialize language first
+  initLanguage();
+  
+  // Wait a bit for language to load, then add initial log
+  setTimeout(() => {
+    addLog(translations[currentLang].logReady, 'info');
+  }, 100);
   
   // Restore state
   await restoreState();
@@ -303,7 +375,7 @@ async function restoreState() {
   chrome.runtime.sendMessage({ action: 'getState' }, (response) => {
     if (response && response.stats && response.stats.isActive) {
       // Active process detected
-      addLog('Active process detected.', 'info');
+      addLog(translations[currentLang].logActiveProcess, 'info');
       
       progressSection.style.display = 'block';
       logSection.style.display = 'block';

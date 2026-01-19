@@ -5,71 +5,86 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PexelBulker</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="translations.js"></script>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎬 PexelBulker</h1>
-      <p class="subtitle">Bulk Video Downloader for Pexels</p>
+      <div class="header-top">
+        <div class="header-title">
+          <h1>🎬 <span data-i18n="title">PexelBulker</span></h1>
+          <p class="subtitle" data-i18n="subtitle">Bulk Video Downloader for Pexels</p>
+        </div>
+        <div class="language-selector">
+          <label for="langSelect" data-i18n="language">Language:</label>
+          <select id="langSelect" class="lang-select">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="zh">中文</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <div class="url-section">
-      <label for="apiUrl">API URL:</label>
-      <input type="text" id="apiUrl" placeholder="https://www.pexels.com/en-us/api/v3/users/..." readonly>
-      <button id="detectBtn" class="btn btn-primary">Detect URL</button>
+      <label for="apiUrl" data-i18n="apiUrlLabel">API URL:</label>
+      <input type="text" id="apiUrl" data-i18n-placeholder="apiUrlPlaceholder" placeholder="https://www.pexels.com/en-us/api/v3/users/..." readonly>
+      <button id="detectBtn" class="btn btn-primary" data-i18n="detectBtn">Detect URL</button>
     </div>
 
     <div class="info-section" id="infoSection" style="display: none;">
       <div class="info-card">
         <div class="info-item">
-          <span class="label">Total Pages:</span>
+          <span class="label" data-i18n="totalPages">Total Pages:</span>
           <span class="value" id="totalPages">-</span>
         </div>
         <div class="info-item">
-          <span class="label">Total Videos:</span>
+          <span class="label" data-i18n="totalVideos">Total Videos:</span>
           <span class="value" id="totalVideos">-</span>
         </div>
       </div>
     </div>
 
     <div class="quality-section" id="qualitySection" style="display: none;">
-      <label>Video Quality:</label>
+      <label data-i18n="videoQuality">Video Quality:</label>
       <div class="quality-options">
         <label class="radio-option">
           <input type="radio" name="quality" value="uhd" checked>
-          <span>UHD (Highest)</span>
+          <span data-i18n="qualityUHD">UHD (Highest)</span>
         </label>
         <label class="radio-option">
           <input type="radio" name="quality" value="hd">
-          <span>HD</span>
+          <span data-i18n="qualityHD">HD</span>
         </label>
         <label class="radio-option">
           <input type="radio" name="quality" value="sd">
-          <span>SD</span>
+          <span data-i18n="qualitySD">SD</span>
         </label>
         <label class="radio-option">
           <input type="radio" name="quality" value="all">
-          <span>All (Best Available)</span>
+          <span data-i18n="qualityAll">All (Best Available)</span>
         </label>
       </div>
     </div>
 
     <div class="page-range-section" id="pageRangeSection" style="display: none;">
-      <label>Page Range:</label>
+      <label data-i18n="pageRange">Page Range:</label>
       <div class="range-inputs">
-        <input type="number" id="startPage" min="1" value="1" placeholder="Start">
+        <input type="number" id="startPage" min="1" value="1" data-i18n-placeholder="pageStart" placeholder="Start">
         <span>-</span>
-        <input type="number" id="endPage" min="1" placeholder="End">
+        <input type="number" id="endPage" min="1" data-i18n-placeholder="pageEnd" placeholder="End">
       </div>
       <label class="checkbox-option">
         <input type="checkbox" id="allPages" checked>
-        <span>Download all pages</span>
+        <span data-i18n="allPages">Download all pages</span>
       </label>
     </div>
 
     <div class="action-section">
       <button id="scanBtn" class="btn btn-success" disabled>
-        <span id="scanBtnText">Scan & Download</span>
+        <span id="scanBtnText" data-i18n="scanBtn">Scan & Download</span>
       </button>
     </div>
 
@@ -77,24 +92,24 @@
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-      <div class="progress-text" id="progressText">Preparing...</div>
+      <div class="progress-text" id="progressText" data-i18n="progressPreparing">Preparing...</div>
       <div class="stats">
-        <span id="scannedPages">0</span> / <span id="totalPagesToScan">0</span> pages scanned
+        <span id="scannedPages">0</span> / <span id="totalPagesToScan">0</span> <span data-i18n="pagesScanned">pages scanned</span>
         <br>
-        <span id="downloadedCount">0</span> / <span id="totalDownloads">0</span> videos downloading
+        <span id="downloadedCount">0</span> / <span id="totalDownloads">0</span> <span data-i18n="videosDownloading">videos downloading</span>
       </div>
     </div>
 
     <div class="log-section" id="logSection" style="display: none;">
       <div class="log-header">
-        <h3>Activity Log</h3>
-        <button id="clearLogBtn" class="btn-small">Clear</button>
+        <h3 data-i18n="activityLog">Activity Log</h3>
+        <button id="clearLogBtn" class="btn-small" data-i18n="clearLog">Clear</button>
       </div>
       <div class="log-content" id="logContent"></div>
     </div>
 
     <div class="footer">
-      <p>Use while browsing Pexels</p>
+      <p data-i18n="footerText">Use while browsing Pexels</p>
     </div>
   </div>
 
