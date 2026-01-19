@@ -8,6 +8,13 @@ let currentLang = 'en';
 
 // Initialize language
 function initLanguage() {
+  // Check if translations is loaded
+  if (typeof translations === 'undefined') {
+    console.error('Translations not loaded!');
+    currentLang = 'en';
+    return;
+  }
+  
   // Load saved language or use browser language
   chrome.storage.local.get(['language'], (result) => {
     if (result.language) {
@@ -21,7 +28,9 @@ function initLanguage() {
     }
     
     // Set language selector
-    document.getElementById('langSelect').value = currentLang;
+    if (langSelect) {
+      langSelect.value = currentLang;
+    }
     
     // Apply translations
     applyTranslations();
@@ -30,6 +39,11 @@ function initLanguage() {
 
 // Apply translations to page
 function applyTranslations() {
+  if (typeof translations === 'undefined') {
+    console.error('Translations not loaded!');
+    return;
+  }
+  
   const lang = currentLang;
   
   // Update all elements with data-i18n attribute
@@ -62,38 +76,31 @@ function changeLanguage(lang) {
   }
 }
 
-// DOM elementleri
-const apiUrlInput = document.getElementById('apiUrl');
-const detectBtn = document.getElementById('detectBtn');
-const infoSection = document.getElementById('infoSection');
-const qualitySection = document.getElementById('qualitySection');
-const pageRangeSection = document.getElementById('pageRangeSection');
-const scanBtn = document.getElementById('scanBtn');
-const progressSection = document.getElementById('progressSection');
-const logSection = document.getElementById('logSection');
-const allPagesCheckbox = document.getElementById('allPages');
-const startPageInput = document.getElementById('startPage');
-const endPageInput = document.getElementById('endPage');
-const langSelect = document.getElementById('langSelect');
-
-// Event listeners
-detectBtn.addEventListener('click', detectAndFetchInfo);
-scanBtn.addEventListener('click', startScanning);
-document.getElementById('clearLogBtn').addEventListener('click', clearLog);
-allPagesCheckbox.addEventListener('change', (e) => {
-  startPageInput.disabled = e.target.checked;
-  endPageInput.disabled = e.target.checked;
-});
-
-// Initialize page range inputs state
-startPageInput.disabled = allPagesCheckbox.checked;
-endPageInput.disabled = allPagesCheckbox.checked;
-langSelect.addEventListener('change', (e) => {
-  changeLanguage(e.target.value);
-});
+// DOM elementleri (will be initialized in DOMContentLoaded)
+let apiUrlInput;
+let detectBtn;
+let infoSection;
+let qualitySection;
+let pageRangeSection;
+let scanBtn;
+let progressSection;
+let logSection;
+let allPagesCheckbox;
+let startPageInput;
+let endPageInput;
+let langSelect;
 
 // Detect URL and fetch info
 async function detectAndFetchInfo() {
+  console.log('detectAndFetchInfo called');
+  
+  // Check if translations is loaded
+  if (typeof translations === 'undefined') {
+    console.error('Translations not loaded!');
+    alert('Extension not fully loaded. Please try again.');
+    return;
+  }
+  
   addLog(translations[currentLang].logDetecting, 'info');
   detectBtn.disabled = true;
   detectBtn.textContent = translations[currentLang].detectingBtn;
@@ -384,6 +391,11 @@ function onScanComplete(data) {
 // Add log
 function addLog(message, type = 'info') {
   const logContent = document.getElementById('logContent');
+  if (!logContent) {
+    console.log(`[LOG] ${message}`);
+    return;
+  }
+  
   const logEntry = document.createElement('div');
   logEntry.className = `log-entry ${type}`;
   
@@ -401,16 +413,80 @@ function clearLog() {
 
 // When page loads
 document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize language first
+  // Check if translations is loaded
+  if (typeof translations === 'undefined') {
+    console.error('CRITICAL: translations.js not loaded!');
+    alert('Extension failed to load properly. Please reload the extension.');
+    return;
+  }
+  
+  console.log('PexelBulker popup loading...');
+  
+  // Initialize DOM elements first
+  apiUrlInput = document.getElementById('apiUrl');
+  detectBtn = document.getElementById('detectBtn');
+  infoSection = document.getElementById('infoSection');
+  qualitySection = document.getElementById('qualitySection');
+  pageRangeSection = document.getElementById('pageRangeSection');
+  scanBtn = document.getElementById('scanBtn');
+  progressSection = document.getElementById('progressSection');
+  logSection = document.getElementById('logSection');
+  allPagesCheckbox = document.getElementById('allPages');
+  startPageInput = document.getElementById('startPage');
+  endPageInput = document.getElementById('endPage');
+  langSelect = document.getElementById('langSelect');
+  
+  console.log('DOM elements initialized');
+  
+  // Add event listeners
+  if (detectBtn) {
+    detectBtn.addEventListener('click', detectAndFetchInfo);
+    console.log('Detect button listener added');
+  }
+  if (scanBtn) {
+    scanBtn.addEventListener('click', startScanning);
+  }
+  
+  const clearLogBtn = document.getElementById('clearLogBtn');
+  if (clearLogBtn) {
+    clearLogBtn.addEventListener('click', clearLog);
+  }
+  
+  if (allPagesCheckbox) {
+    allPagesCheckbox.addEventListener('change', (e) => {
+      startPageInput.disabled = e.target.checked;
+      endPageInput.disabled = e.target.checked;
+    });
+  }
+  
+  if (langSelect) {
+    langSelect.addEventListener('change', (e) => {
+      changeLanguage(e.target.value);
+    });
+  }
+  
+  // Initialize page range inputs state
+  if (startPageInput && endPageInput && allPagesCheckbox) {
+    startPageInput.disabled = allPagesCheckbox.checked;
+    endPageInput.disabled = allPagesCheckbox.checked;
+  }
+  
+  // Initialize language
   initLanguage();
   
   // Wait a bit for language to load, then add initial log
   setTimeout(() => {
-    addLog(translations[currentLang].logReady, 'info');
+    if (typeof translations !== 'undefined' && translations[currentLang]) {
+      addLog(translations[currentLang].logReady, 'info');
+    } else {
+      addLog('PexelBulker ready. Click the button to detect URL.', 'info');
+    }
   }, 100);
   
   // Restore state
   await restoreState();
+  
+  console.log('PexelBulker popup loaded successfully');
 });
 
 // Restore state
