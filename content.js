@@ -45,11 +45,19 @@ async function fetchApiData(url) {
     const response = await fetch(url, {
       method: 'GET',
       credentials: 'include', // Cookie'leri dahil et
+      mode: 'cors',
       headers: {
-        'Accept': 'application/json',
+        'Accept': '*/*',
+        'Accept-Language': navigator.language || 'tr,en-US;q=0.9,en;q=0.8',
+        'Content-Type': 'application/json',
+        'Secret-Key': 'H2jk9uKnhRmL6WPwh89zBezWvr',
+        'X-Client-Type': 'react',
         'X-Requested-With': 'XMLHttpRequest',
-        'Referer': window.location.href
-      }
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin'
+      },
+      referrer: window.location.href
     });
     
     if (!response.ok) {
