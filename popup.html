@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,34 +10,34 @@
   <div class="container">
     <div class="header">
       <h1>🎬 PexelBulker</h1>
-      <p class="subtitle">Pexels Toplu Video İndirici</p>
+      <p class="subtitle">Bulk Video Downloader for Pexels</p>
     </div>
 
     <div class="url-section">
-      <label for="apiUrl">API URL'si:</label>
-      <input type="text" id="apiUrl" placeholder="https://www.pexels.com/tr-tr/api/v3/users/..." readonly>
-      <button id="detectBtn" class="btn btn-primary">URL'yi Tespit Et</button>
+      <label for="apiUrl">API URL:</label>
+      <input type="text" id="apiUrl" placeholder="https://www.pexels.com/en-us/api/v3/users/..." readonly>
+      <button id="detectBtn" class="btn btn-primary">Detect URL</button>
     </div>
 
     <div class="info-section" id="infoSection" style="display: none;">
       <div class="info-card">
         <div class="info-item">
-          <span class="label">Toplam Sayfa:</span>
+          <span class="label">Total Pages:</span>
           <span class="value" id="totalPages">-</span>
         </div>
         <div class="info-item">
-          <span class="label">Toplam Video:</span>
+          <span class="label">Total Videos:</span>
           <span class="value" id="totalVideos">-</span>
         </div>
       </div>
     </div>
 
     <div class="quality-section" id="qualitySection" style="display: none;">
-      <label>Video Kalitesi:</label>
+      <label>Video Quality:</label>
       <div class="quality-options">
         <label class="radio-option">
           <input type="radio" name="quality" value="uhd" checked>
-          <span>UHD (En Yüksek)</span>
+          <span>UHD (Highest)</span>
         </label>
         <label class="radio-option">
           <input type="radio" name="quality" value="hd">
@@ -49,27 +49,27 @@
         </label>
         <label class="radio-option">
           <input type="radio" name="quality" value="all">
-          <span>Hepsi (Mevcut en iyi)</span>
+          <span>All (Best Available)</span>
         </label>
       </div>
     </div>
 
     <div class="page-range-section" id="pageRangeSection" style="display: none;">
-      <label>Sayfa Aralığı:</label>
+      <label>Page Range:</label>
       <div class="range-inputs">
-        <input type="number" id="startPage" min="1" value="1" placeholder="Başlangıç">
+        <input type="number" id="startPage" min="1" value="1" placeholder="Start">
         <span>-</span>
-        <input type="number" id="endPage" min="1" placeholder="Bitiş">
+        <input type="number" id="endPage" min="1" placeholder="End">
       </div>
       <label class="checkbox-option">
         <input type="checkbox" id="allPages" checked>
-        <span>Tüm sayfaları indir</span>
+        <span>Download all pages</span>
       </label>
     </div>
 
     <div class="action-section">
       <button id="scanBtn" class="btn btn-success" disabled>
-        <span id="scanBtnText">Tara ve İndir</span>
+        <span id="scanBtnText">Scan & Download</span>
       </button>
     </div>
 
@@ -77,24 +77,24 @@
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-      <div class="progress-text" id="progressText">Hazırlanıyor...</div>
+      <div class="progress-text" id="progressText">Preparing...</div>
       <div class="stats">
-        <span id="scannedPages">0</span> / <span id="totalPagesToScan">0</span> sayfa tarandı
+        <span id="scannedPages">0</span> / <span id="totalPagesToScan">0</span> pages scanned
         <br>
-        <span id="downloadedCount">0</span> / <span id="totalDownloads">0</span> video indiriliyor
+        <span id="downloadedCount">0</span> / <span id="totalDownloads">0</span> videos downloading
       </div>
     </div>
 
     <div class="log-section" id="logSection" style="display: none;">
       <div class="log-header">
-        <h3>İşlem Günlüğü</h3>
-        <button id="clearLogBtn" class="btn-small">Temizle</button>
+        <h3>Activity Log</h3>
+        <button id="clearLogBtn" class="btn-small">Clear</button>
       </div>
       <div class="log-content" id="logContent"></div>
     </div>
 
     <div class="footer">
-      <p>Pexels'de gezinirken kullanın</p>
+      <p>Use while browsing Pexels</p>
     </div>
   </div>
 

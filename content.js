@@ -121,5 +121,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-// Sayfa yüklendiğinde kullanıcıya bilgi ver
-console.log('PexelBulker eklentisi aktif');
+// Notify user when page loads
+console.log('PexelBulker extension is active');

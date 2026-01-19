@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "PexelBulker",
   "version": "1.0.0",
-  "description": "Pexels videolarını toplu indirme aracı",
+  "description": "Bulk video downloader for Pexels - Download multiple videos with quality selection and progress tracking",
   "permissions": [
     "downloads",
     "storage",

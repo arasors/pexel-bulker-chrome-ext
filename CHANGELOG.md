@@ -1,0 +1,188 @@
+# Changelog
+
+All notable changes to PexelBulker will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2026-01-19
+
+### 🎉 Initial Release
+
+#### Added
+- **Bulk Download Functionality**
+  - Download multiple videos from Pexels user pages
+  - Automatic page scanning and pagination handling
+  - Support for up to 80 videos per page scan
+
+- **Quality Selection**
+  - UHD (4K) quality option
+  - HD (1080p/720p) quality option
+  - SD (Standard definition) quality option
+  - Auto mode - automatically selects best available quality
+
+- **Progress Tracking**
+  - Real-time progress bar
+  - Page scan counter
+  - Video download counter
+  - Detailed activity log with timestamps
+  - Color-coded log messages (info/success/error)
+
+- **Download Controls**
+  - Pause downloads
+  - Resume downloads from last position
+  - Cancel entire download process
+  - Confirmation dialog for cancellation
+
+- **State Persistence**
+  - Download state saved to Chrome storage
+  - Continue downloads even after closing popup
+  - Restore progress on popup reopen
+  - Maintain queue and download position
+
+- **User Interface**
+  - Clean, modern gradient design
+  - Responsive layout
+  - Intuitive controls
+  - Page range selection
+  - "All pages" quick option
+  - Clear log button
+
+- **Smart Features**
+  - Automatic URL detection from Pexels pages
+  - User ID extraction from page
+  - API URL construction
+  - Locale detection (supports all Pexels locales)
+  - Duplicate filename handling
+
+- **API Protection**
+  - Rate limiting (500ms between page scans)
+  - Download delay (1000ms between downloads)
+  - Proper error handling
+  - Chrome download API integration
+
+- **Security**
+  - Uses Pexels cookies for authentication
+  - Proper headers for API requests
+  - Secret-key authentication
+  - CORS-compliant requests
+
+#### Technical
+- Manifest V3 implementation
+- Service Worker background script
+- Content script for page interaction
+- Chrome storage for state persistence
+- Modern async/await patterns
+- Modular code structure
+
+#### Documentation
+- Comprehensive README (English)
+- Turkish README (README_TR.md)
+- Installation guide (KURULUM.md)
+- Quick start guide (HIZLI-BASLANGIC.md)
+- Feature documentation (OZELLIKLER.md)
+- Project summary (PROJE-OZETI.md)
+- Chrome Store description
+- Privacy policy
+- This changelog
+
+#### Assets
+- Extension icons (16px, 48px, 128px)
+- Icon generator tool (generate-icons.html)
+- Packaging script (package-extension.sh)
+- MIT License
+
+---
+
+## [Unreleased]
+
+### Planned Features for Future Releases
+
+#### v1.1.0 (Next)
+- Photo download support
+- Download speed indicator
+- Estimated time remaining
+- Download history view
+- Export download list (JSON/CSV)
+
+#### v1.2.0
+- Playlist/Collection support
+- Favorite users management
+- Scheduled downloads
+- Custom download location
+- Filename templates
+
+#### v1.3.0
+- Video preview before download
+- Thumbnail generation
+- Duplicate detection
+- Bulk rename tools
+- Statistics dashboard
+
+#### v2.0.0
+- Multi-site support (Pixabay, Unsplash)
+- Cloud backup integration
+- Download manager improvements
+- Advanced filters
+- Batch operations
+
+---
+
+## Version History
+
+### Version Numbering
+
+- **MAJOR**: Breaking changes or major new features
+- **MINOR**: New features, backward compatible
+- **PATCH**: Bug fixes and minor improvements
+
+### Support Policy
+
+- Latest version always supported
+- Bug fixes backported when critical
+- Security updates immediate
+
+---
+
+## How to Update
+
+### For Users
+
+1. Chrome will auto-update the extension
+2. Or manually: chrome://extensions/ → Update
+
+### For Developers
+
+```bash
+# Update version in manifest.json
+# Update CHANGELOG.md
+# Create git tag
+git tag v1.0.0
+git push --tags
+```
+
+---
+
+## Credits
+
+### Contributors
+- Initial development and release - 2026
+
+### Special Thanks
+- Pexels for providing amazing free stock videos
+- Chrome Extensions team for great documentation
+- All users who provide feedback
+
+---
+
+## License
+
+MIT License - See LICENSE file for details
+
+---
+
+**Stay tuned for updates!** 🚀
+
+For feature requests or bug reports:
+- GitHub Issues: [Repository URL]
+- Email: [Contact Email]

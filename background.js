@@ -95,13 +95,13 @@ async function startBulkDownload(config) {
   downloadQueue = [];
   await saveState();
   
-  sendLogToPopup('Sayfalar taranıyor...', 'info');
-  updateProgress('Sayfalar taranıyor...');
+  sendLogToPopup('Scanning pages...', 'info');
+  updateProgress('Scanning pages...');
   
-  // Tüm sayfaları tara
+  // Scan all pages
   for (let page = startPage; page <= endPage; page++) {
     if (isCancelled) {
-      sendLogToPopup('Tarama iptal edildi.', 'info');
+      sendLogToPopup('Scan cancelled.', 'info');
       break;
     }
     
@@ -130,12 +130,12 @@ async function startBulkDownload(config) {
         await sleep(500);
       }
     } catch (error) {
-      sendLogToPopup(`Sayfa ${page} taranırken hata: ${error.message}`, 'error');
+      sendLogToPopup(`Error scanning page ${page}: ${error.message}`, 'error');
     }
   }
   
   if (!isCancelled) {
-    sendLogToPopup(`Tarama tamamlandı! ${downloadQueue.length} video bulundu.`, 'success');
+    sendLogToPopup(`Scan complete! Found ${downloadQueue.length} videos.`, 'success');
     
     // İndirmeleri başlat
     if (downloadQueue.length > 0) {
@@ -220,25 +220,25 @@ function selectVideoQuality(videoData, preferredQuality, videoId) {
   return null;
 }
 
-// İndirmeleri başlat
+// Start downloads
 async function startDownloads() {
   if (isDownloading) return;
   
   isDownloading = true;
-  sendLogToPopup(`${downloadQueue.length} video indiriliyor...`, 'info');
-  updateProgress('Videolar indiriliyor...');
+  sendLogToPopup(`Downloading ${downloadQueue.length} videos...`, 'info');
+  updateProgress('Downloading videos...');
   await saveState();
   
-  // Chrome'un indirme limitlerine uygun olarak sırayla indir
+  // Download sequentially to comply with Chrome download limits
   for (let i = currentDownloadIndex; i < downloadQueue.length; i++) {
-    // Duraklat kontrolü
+    // Pause check
     while (isPaused && !isCancelled) {
       await sleep(1000);
     }
     
-    // İptal kontrolü
+    // Cancel check
     if (isCancelled) {
-      sendLogToPopup('İndirme iptal edildi.', 'info');
+      sendLogToPopup('Download cancelled.', 'info');
       break;
     }
     
@@ -248,15 +248,15 @@ async function startDownloads() {
     try {
       await downloadVideo(item);
       downloadStats.downloadedCount++;
-      updateProgress(`Video indiriliyor: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
-      sendLogToPopup(`İndirildi: ${item.filename}`, 'success');
+      updateProgress(`Downloading video: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
+      sendLogToPopup(`Downloaded: ${item.filename}`, 'success');
       await saveState();
       
       // Rate limiting
       await sleep(1000);
     } catch (error) {
       downloadStats.failed++;
-      sendLogToPopup(`İndirme hatası (${item.filename}): ${error.message}`, 'error');
+      sendLogToPopup(`Download error (${item.filename}): ${error.message}`, 'error');
       await saveState();
     }
   }
@@ -266,7 +266,7 @@ async function startDownloads() {
   await saveState();
   
   if (!isCancelled) {
-    sendLogToPopup(`İndirme tamamlandı! Başarılı: ${downloadStats.downloadedCount}, Başarısız: ${downloadStats.failed}`, 'success');
+    sendLogToPopup(`Download complete! Successful: ${downloadStats.downloadedCount}, Failed: ${downloadStats.failed}`, 'success');
   }
   
   chrome.runtime.sendMessage({
@@ -279,25 +279,25 @@ async function startDownloads() {
   });
 }
 
-// İndirmeyi duraklat
+// Pause download
 function pauseDownload() {
   isPaused = true;
   downloadStats.isPaused = true;
   saveState();
-  sendLogToPopup('İndirme duraklatıldı.', 'info');
-  updateProgress('Duraklatıldı');
+  sendLogToPopup('Download paused.', 'info');
+  updateProgress('Paused');
 }
 
-// İndirmeye devam et
+// Resume download
 function resumeDownload() {
   isPaused = false;
   downloadStats.isPaused = false;
   saveState();
-  sendLogToPopup('İndirme devam ediyor.', 'success');
-  updateProgress(`Video indiriliyor: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
+  sendLogToPopup('Download resumed.', 'success');
+  updateProgress(`Downloading video: ${downloadStats.downloadedCount}/${downloadStats.totalDownloads}`);
 }
 
-// İndirmeyi iptal et
+// Cancel download
 function cancelDownload() {
   isCancelled = true;
   isPaused = false;
@@ -305,8 +305,8 @@ function cancelDownload() {
   downloadStats.isActive = false;
   downloadStats.isPaused = false;
   saveState();
-  sendLogToPopup('İndirme iptal edildi.', 'info');
-  updateProgress('İptal edildi');
+  sendLogToPopup('Download cancelled.', 'info');
+  updateProgress('Cancelled');
 }
 
 // Video indir

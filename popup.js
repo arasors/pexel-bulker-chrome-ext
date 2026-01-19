@@ -27,65 +27,65 @@ allPagesCheckbox.addEventListener('change', (e) => {
   endPageInput.disabled = e.target.checked;
 });
 
-// URL tespiti ve bilgi alma
+// Detect URL and fetch info
 async function detectAndFetchInfo() {
-  addLog('URL tespiti yapılıyor...', 'info');
+  addLog('Detecting URL...', 'info');
   detectBtn.disabled = true;
-  detectBtn.textContent = 'Tespit ediliyor...';
+  detectBtn.textContent = 'Detecting...';
   
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
     if (!tab.url.includes('pexels.com')) {
-      addLog('Hata: Pexels.com sitesinde değilsiniz!', 'error');
+      addLog('Error: You are not on Pexels.com!', 'error');
       detectBtn.disabled = false;
-      detectBtn.textContent = 'URL\'yi Tespit Et';
+      detectBtn.textContent = 'Detect URL';
       return;
     }
     
-    // Content script'e mesaj gönder
+    // Send message to content script
     chrome.tabs.sendMessage(tab.id, { action: 'getUserIdFromPage' }, async (response) => {
       if (chrome.runtime.lastError) {
-        addLog('Sayfa bilgisi alınamadı. Sayfayı yenileyin ve tekrar deneyin.', 'error');
+        addLog('Failed to get page info. Please refresh the page and try again.', 'error');
         detectBtn.disabled = false;
-        detectBtn.textContent = 'URL\'yi Tespit Et';
+        detectBtn.textContent = 'Detect URL';
         return;
       }
       
       if (response && response.userId) {
-        // API URL'sini oluştur
-        const locale = tab.url.match(/pexels\.com\/([a-z]{2}-[a-z]{2})/)?.[1] || 'tr-tr';
+        // Build API URL
+        const locale = tab.url.match(/pexels\.com\/([a-z]{2}-[a-z]{2})/)?.[1] || 'en-us';
         apiBaseUrl = `https://www.pexels.com/${locale}/api/v3/users/${response.userId}/media/recent?type=videos&seo_tags=true`;
         apiUrlInput.value = apiBaseUrl + '&page=1&per_page=12';
         
-        addLog(`Kullanıcı ID: ${response.userId}`, 'success');
+        addLog(`User ID: ${response.userId}`, 'success');
         
-        // İlk sayfayı fetch et
+        // Fetch first page
         await fetchFirstPage();
       } else {
-        // Manuel olarak URL'den user ID çıkarmayı dene
+        // Try to extract user ID from URL manually
         const match = tab.url.match(/pexels\.com\/[a-z-]+\/@([^\/]+)/);
         if (match) {
-          addLog('Kullanıcı ID otomatik tespit edilemedi. Manuel API URL\'si gerekli.', 'error');
-          addLog('Network sekmesinden API URL\'sini kopyalayıp yapıştırabilirsiniz.', 'info');
+          addLog('User ID could not be detected automatically. Manual API URL required.', 'error');
+          addLog('You can copy the API URL from the Network tab.', 'info');
         } else {
-          addLog('Bir kullanıcının medya sayfasında olmanız gerekiyor.', 'error');
+          addLog('You must be on a user\'s media page.', 'error');
         }
       }
       
       detectBtn.disabled = false;
-      detectBtn.textContent = 'URL\'yi Tespit Et';
+      detectBtn.textContent = 'Detect URL';
     });
   } catch (error) {
-    addLog(`Hata: ${error.message}`, 'error');
+    addLog(`Error: ${error.message}`, 'error');
     detectBtn.disabled = false;
-    detectBtn.textContent = 'URL\'yi Tespit Et';
+    detectBtn.textContent = 'Detect URL';
   }
 }
 
-// İlk sayfayı fetch et ve pagination bilgisini al
+// Fetch first page and get pagination info
 async function fetchFirstPage() {
-  addLog('İlk sayfa bilgisi alınıyor...', 'info');
+  addLog('Fetching first page info...', 'info');
   
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -93,7 +93,7 @@ async function fetchFirstPage() {
     
     chrome.tabs.sendMessage(tab.id, { action: 'fetchApi', url: testUrl }, (response) => {
       if (chrome.runtime.lastError) {
-        addLog('API çağrısı başarısız. Sayfa yenilenerek tekrar deneyin.', 'error');
+        addLog('API call failed. Please refresh the page and try again.', 'error');
         return;
       }
       
@@ -103,8 +103,8 @@ async function fetchFirstPage() {
           totalPages = data.pagination.total_pages;
           totalResults = data.pagination.total_results;
           
-          document.getElementById('totalPages').textContent = totalPages.toLocaleString('tr-TR');
-          document.getElementById('totalVideos').textContent = totalResults.toLocaleString('tr-TR');
+          document.getElementById('totalPages').textContent = totalPages.toLocaleString('en-US');
+          document.getElementById('totalVideos').textContent = totalResults.toLocaleString('en-US');
           document.getElementById('endPage').value = totalPages;
           document.getElementById('endPage').max = totalPages;
           
@@ -113,20 +113,20 @@ async function fetchFirstPage() {
           pageRangeSection.style.display = 'block';
           scanBtn.disabled = false;
           
-          addLog(`Toplam ${totalPages} sayfa, ${totalResults} video bulundu!`, 'success');
+          addLog(`Found ${totalPages} pages with ${totalResults} videos!`, 'success');
         } else {
-          addLog('Pagination bilgisi alınamadı.', 'error');
+          addLog('Could not get pagination info.', 'error');
         }
       } else {
-        addLog(`API hatası: ${response.error}`, 'error');
+        addLog(`API error: ${response.error}`, 'error');
       }
     });
   } catch (error) {
-    addLog(`Hata: ${error.message}`, 'error');
+    addLog(`Error: ${error.message}`, 'error');
   }
 }
 
-// Tarama ve indirme işlemini başlat
+// Start scanning and downloading
 async function startScanning() {
   if (isScanning) return;
   
@@ -140,11 +140,11 @@ async function startScanning() {
   const startPage = allPages ? 1 : parseInt(startPageInput.value) || 1;
   const endPage = allPages ? totalPages : parseInt(endPageInput.value) || totalPages;
   
-  addLog(`Tarama başlıyor: ${startPage}-${endPage} sayfalar, kalite: ${quality}`, 'info');
+  addLog(`Starting scan: pages ${startPage}-${endPage}, quality: ${quality}`, 'info');
   
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   
-  // Background script'e tarama işlemini başlat
+  // Start bulk download in background script
   chrome.runtime.sendMessage({
     action: 'startBulkDownload',
     data: {
@@ -155,7 +155,7 @@ async function startScanning() {
       tabId: tab.id
     }
   }, () => {
-    // İşlem başladı, butonları güncelle
+    // Process started, update buttons
     updateControlButtons(false, true);
   });
 }
@@ -199,35 +199,35 @@ function updateProgress(data) {
   }
 }
 
-// Kontrol butonlarını güncelle
+// Update control buttons
 function updateControlButtons(isPaused, isDownloading) {
   const scanBtnText = document.getElementById('scanBtnText');
   
   if (isDownloading) {
     if (isPaused) {
-      scanBtn.textContent = '▶ Devam Et';
+      scanBtn.textContent = '▶ Resume';
       scanBtn.disabled = false;
       scanBtn.onclick = resumeDownload;
     } else {
-      scanBtn.textContent = '⏸ Duraklat';
+      scanBtn.textContent = '⏸ Pause';
       scanBtn.disabled = false;
       scanBtn.onclick = pauseDownload;
     }
     
-    // İptal butonu göster
+    // Show cancel button
     if (!document.getElementById('cancelBtn')) {
       const cancelBtn = document.createElement('button');
       cancelBtn.id = 'cancelBtn';
       cancelBtn.className = 'btn btn-danger';
-      cancelBtn.textContent = '✕ İptal Et';
+      cancelBtn.textContent = '✕ Cancel';
       cancelBtn.onclick = cancelDownload;
       scanBtn.parentElement.appendChild(cancelBtn);
     }
   } else {
-    scanBtn.textContent = 'Tara ve İndir';
+    scanBtn.textContent = 'Scan & Download';
     scanBtn.onclick = startScanning;
     
-    // İptal butonunu kaldır
+    // Remove cancel button
     const cancelBtn = document.getElementById('cancelBtn');
     if (cancelBtn) {
       cancelBtn.remove();
@@ -235,50 +235,50 @@ function updateControlButtons(isPaused, isDownloading) {
   }
 }
 
-// İndirmeyi duraklat
+// Pause download
 function pauseDownload() {
   chrome.runtime.sendMessage({ action: 'pauseDownload' }, () => {
-    addLog('İndirme duraklatıldı.', 'info');
+    addLog('Download paused.', 'info');
     updateControlButtons(true, true);
   });
 }
 
-// İndirmeye devam et
+// Resume download
 function resumeDownload() {
   chrome.runtime.sendMessage({ action: 'resumeDownload' }, () => {
-    addLog('İndirme devam ediyor...', 'success');
+    addLog('Download resumed...', 'success');
     updateControlButtons(false, true);
   });
 }
 
-// İndirmeyi iptal et
+// Cancel download
 function cancelDownload() {
-  if (confirm('İndirmeyi iptal etmek istediğinize emin misiniz?')) {
+  if (confirm('Are you sure you want to cancel the download?')) {
     chrome.runtime.sendMessage({ action: 'cancelDownload' }, () => {
-      addLog('İndirme iptal edildi.', 'info');
+      addLog('Download cancelled.', 'info');
       isScanning = false;
       updateControlButtons(false, false);
     });
   }
 }
 
-// Tarama tamamlandı
+// Scan complete
 function onScanComplete(data) {
   isScanning = false;
   scanBtn.disabled = false;
-  scanBtn.textContent = 'Tara ve İndir';
+  scanBtn.textContent = 'Scan & Download';
   
-  addLog(`Tarama tamamlandı! ${data.totalDownloads} video indirme kuyruğuna eklendi.`, 'success');
-  document.getElementById('progressText').textContent = 'Tamamlandı!';
+  addLog(`Scan complete! ${data.totalDownloads} videos added to download queue.`, 'success');
+  document.getElementById('progressText').textContent = 'Completed!';
 }
 
-// Log ekle
+// Add log
 function addLog(message, type = 'info') {
   const logContent = document.getElementById('logContent');
   const logEntry = document.createElement('div');
   logEntry.className = `log-entry ${type}`;
   
-  const timestamp = new Date().toLocaleTimeString('tr-TR');
+  const timestamp = new Date().toLocaleTimeString('en-US');
   logEntry.textContent = `[${timestamp}] ${message}`;
   
   logContent.appendChild(logEntry);
@@ -290,28 +290,28 @@ function clearLog() {
   document.getElementById('logContent').innerHTML = '';
 }
 
-// Sayfa yüklendiğinde
+// When page loads
 document.addEventListener('DOMContentLoaded', async () => {
-  addLog('PexelBulker hazır. URL tespiti için butona tıklayın.', 'info');
+  addLog('PexelBulker ready. Click the button to detect URL.', 'info');
   
-  // State'i geri yükle
+  // Restore state
   await restoreState();
 });
 
-// State'i geri yükle
+// Restore state
 async function restoreState() {
   chrome.runtime.sendMessage({ action: 'getState' }, (response) => {
     if (response && response.stats && response.stats.isActive) {
-      // Aktif bir işlem var
-      addLog('Devam eden işlem tespit edildi.', 'info');
+      // Active process detected
+      addLog('Active process detected.', 'info');
       
       progressSection.style.display = 'block';
       logSection.style.display = 'block';
       
-      // Progress'i güncelle
+      // Update progress
       updateProgress(response.stats);
       
-      // Butonları güncelle
+      // Update buttons
       updateControlButtons(response.isPaused, response.isDownloading);
     }
   });
