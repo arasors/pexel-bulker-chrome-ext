@@ -85,6 +85,8 @@ body {
 
 .url-section {
   margin-bottom: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .url-section label {
@@ -172,6 +174,8 @@ body {
 
 .info-section {
   margin-bottom: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .info-card {
@@ -203,6 +207,8 @@ body {
 
 .quality-section {
   margin-bottom: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .quality-section > label {
@@ -246,6 +252,8 @@ body {
 
 .page-range-section {
   margin-bottom: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .page-range-section > label {

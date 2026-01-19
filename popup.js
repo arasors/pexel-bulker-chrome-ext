@@ -84,6 +84,10 @@ allPagesCheckbox.addEventListener('change', (e) => {
   startPageInput.disabled = e.target.checked;
   endPageInput.disabled = e.target.checked;
 });
+
+// Initialize page range inputs state
+startPageInput.disabled = allPagesCheckbox.checked;
+endPageInput.disabled = allPagesCheckbox.checked;
 langSelect.addEventListener('change', (e) => {
   changeLanguage(e.target.value);
 });
@@ -208,6 +212,9 @@ async function startScanning() {
     .replace('{end}', endPage)
     .replace('{quality}', quality), 'info');
   
+  // Hide form sections (collapsible)
+  hideFormSections();
+  
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   
   // Start bulk download in background script
@@ -221,9 +228,27 @@ async function startScanning() {
       tabId: tab.id
     }
   }, () => {
-    // Process started, update buttons
-    updateControlButtons(false, true);
+    // Process started, update buttons immediately
+    setTimeout(() => {
+      updateControlButtons(false, true);
+    }, 100);
   });
+}
+
+// Hide form sections when scanning
+function hideFormSections() {
+  document.querySelector('.url-section').style.display = 'none';
+  infoSection.style.display = 'none';
+  qualitySection.style.display = 'none';
+  pageRangeSection.style.display = 'none';
+}
+
+// Show form sections when completed/cancelled
+function showFormSections() {
+  document.querySelector('.url-section').style.display = 'block';
+  infoSection.style.display = 'block';
+  qualitySection.style.display = 'block';
+  pageRangeSection.style.display = 'block';
 }
 
 // Background script'ten gelen mesajları dinle
@@ -288,9 +313,13 @@ function updateControlButtons(isPaused, isDownloading) {
       cancelBtn.textContent = translations[currentLang].cancelBtn;
       cancelBtn.onclick = cancelDownload;
       scanBtn.parentElement.appendChild(cancelBtn);
+    } else {
+      // Update cancel button text if language changed
+      document.getElementById('cancelBtn').textContent = translations[currentLang].cancelBtn;
     }
   } else {
     scanBtn.textContent = translations[currentLang].scanBtn;
+    scanBtn.disabled = false;
     scanBtn.onclick = startScanning;
     
     // Remove cancel button
@@ -298,6 +327,9 @@ function updateControlButtons(isPaused, isDownloading) {
     if (cancelBtn) {
       cancelBtn.remove();
     }
+    
+    // Show form sections again
+    showFormSections();
   }
 }
 
@@ -324,6 +356,7 @@ function cancelDownload() {
       addLog(translations[currentLang].logCancelled, 'info');
       isScanning = false;
       updateControlButtons(false, false);
+      showFormSections();
     });
   }
 }
@@ -333,9 +366,19 @@ function onScanComplete(data) {
   isScanning = false;
   scanBtn.disabled = false;
   scanBtn.textContent = translations[currentLang].scanBtn;
+  scanBtn.onclick = startScanning;
+  
+  // Remove cancel button
+  const cancelBtn = document.getElementById('cancelBtn');
+  if (cancelBtn) {
+    cancelBtn.remove();
+  }
   
   addLog(translations[currentLang].logScanComplete.replace('{count}', data.totalDownloads), 'success');
   document.getElementById('progressText').textContent = translations[currentLang].progressCompleted;
+  
+  // Show form sections again
+  showFormSections();
 }
 
 // Add log
@@ -379,6 +422,9 @@ async function restoreState() {
       
       progressSection.style.display = 'block';
       logSection.style.display = 'block';
+      
+      // Hide form sections since download is active
+      hideFormSections();
       
       // Update progress
       updateProgress(response.stats);
