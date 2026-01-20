@@ -20,6 +20,7 @@ fi
 
 # Geçici dizin oluştur
 TEMP_DIR="pexelbulker-package-temp"
+VERSION="1.3.1"
 rm -rf "$TEMP_DIR"
 mkdir -p "$TEMP_DIR"
 
@@ -45,7 +46,7 @@ else
 fi
 
 # ZIP oluştur
-PACKAGE_NAME="pexelbulker-v1.0.0.zip"
+PACKAGE_NAME="pexelbulker-v$VERSION-multilanguage.zip"
 echo ""
 echo "🗜️  ZIP dosyası oluşturuluyor..."
 
