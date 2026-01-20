@@ -5,6 +5,83 @@ All notable changes to PexelBulker will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-01-19
+
+### 🎨 Added - UX Improvements
+
+#### New Features
+- **Open in New Tab Button**
+  - Icon button in header (⤢)
+  - Opens extension in full tab view
+  - More space for viewing history and logs
+  - Tooltip in all 5 languages
+  - Properly centered when opened in new tab
+  
+- **Auto-scroll on Open**
+  - Extension automatically scrolls to bottom on load
+  - Makes "Detect URL" button immediately visible
+  - Smooth scroll animation (300ms delay)
+  - Better first-time user experience
+
+#### Problem Solved
+- Users no longer need to scroll to find detect URL button
+- Full tab view available for better visibility
+- Extension properly centered when opened in tab (not stuck in corner)
+- Improved accessibility
+
+#### Technical
+- New `openInNewTab()` function
+- Auto-scroll with smooth behavior
+- Title translations support added
+- Flexbox centering for tab view
+- Container has fixed width (450px) with rounded corners and shadow
+
+---
+
+## [1.3.0] - 2026-01-19
+
+### 🎯 Added - Download History & Better Controls
+
+#### New Features
+- **Download History Management**
+  - View past downloads (completed and cancelled)
+  - Resume cancelled downloads from where they left off
+  - Delete history items
+  - Auto-cleanup after 7 days
+  - Max 20 history items
+  - Time ago display (e.g., "2h ago", "3d ago")
+  
+- **Improved Control Buttons**
+  - Pause/Cancel buttons now visible during scanning phase
+  - Fixed issue where buttons appeared only during download
+  - Buttons always visible when any process is active
+  - Better state management
+
+#### UI Improvements
+- New "Download History" section at bottom of popup
+- Collapsible history list (Show/Hide button)
+- Each history item shows:
+  - Status (Completed/Cancelled)
+  - Time ago
+  - Page range
+  - Quality
+  - Progress percentage
+  - Resume and Delete buttons
+- All 5 languages supported
+
+#### Problem Solved
+- Users can now pause/cancel during the scanning phase
+- Resume interrupted downloads without starting over
+- Track download history for reference
+
+#### Technical
+- History stored in `chrome.storage.local`
+- Auto-cleanup of entries older than 7 days
+- Resume functionality restores all settings
+- History items include full download state
+
+---
+
 ## [1.2.0] - 2026-01-19
 
 ### 🎯 Added - Custom Download Folder

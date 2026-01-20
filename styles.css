@@ -7,15 +7,21 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-width: 450px;
-  max-width: 450px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .container {
+  width: 450px;
   background: white;
   padding: 20px;
   max-height: 600px;
   overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  margin: 20px;
 }
 
 .header {
@@ -33,6 +39,35 @@ body {
 
 .header-title {
   flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.btn-icon {
+  padding: 6px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
 }
 
 .header h1 {
@@ -427,6 +462,117 @@ body {
 .log-entry.info {
   border-left-color: #4299e1;
   color: #2c5282;
+}
+
+.history-section {
+  margin-top: 20px;
+  border-top: 2px solid #f0f0f0;
+  padding-top: 15px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.history-header h3 {
+  font-size: 14px;
+  color: #333;
+  margin: 0;
+}
+
+.history-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.history-item {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.history-item:hover {
+  background: #f0f0f0;
+  border-color: #667eea;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.history-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.history-item-date {
+  font-size: 10px;
+  color: #999;
+}
+
+.history-item-info {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.history-item-progress {
+  font-size: 11px;
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.history-item-actions button {
+  flex: 1;
+  padding: 6px;
+  font-size: 11px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-resume-history {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-resume-history:hover {
+  background: #38a169;
+}
+
+.btn-delete-history {
+  background: #f56565;
+  color: white;
+}
+
+.btn-delete-history:hover {
+  background: #e53e3e;
+}
+
+.history-empty {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 12px;
 }
 
 .footer {

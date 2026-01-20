@@ -15,15 +15,19 @@
           <h1>🎬 <span data-i18n="title">PexelBulker</span></h1>
           <p class="subtitle" data-i18n="subtitle">Bulk Video Downloader for Pexels</p>
         </div>
-        <div class="language-selector">
-          <label for="langSelect" data-i18n="language">Language:</label>
-          <select id="langSelect" class="lang-select">
-            <option value="en">English</option>
-            <option value="tr">Türkçe</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="zh">中文</option>
-          </select>
+          <div class="header-actions">
+            <button id="openInTabBtn" class="btn-icon" title="Open in new tab" data-i18n-title="openInTab">
+              ⤢
+            </button>
+          <div class="language-selector">
+            <select id="langSelect" class="lang-select">
+              <option value="en">EN</option>
+              <option value="tr">TR</option>
+              <option value="es">ES</option>
+              <option value="fr">FR</option>
+              <option value="zh">ZH</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -118,6 +122,14 @@
         <button id="clearLogBtn" class="btn-small" data-i18n="clearLog">Clear</button>
       </div>
       <div class="log-content" id="logContent"></div>
+    </div>
+
+    <div class="history-section" id="historySection" style="display: none;">
+      <div class="history-header">
+        <h3 data-i18n="downloadHistory">Download History</h3>
+        <button id="toggleHistoryBtn" class="btn-small" data-i18n="showHistory">Show</button>
+      </div>
+      <div class="history-list" id="historyList" style="display: none;"></div>
     </div>
 
     <div class="footer">

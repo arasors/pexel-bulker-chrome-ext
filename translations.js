@@ -80,7 +80,21 @@ const translations = {
     
     // Language
     language: "Language:",
-    languageName: "English"
+    languageName: "English",
+    openInTab: "Open in new tab",
+    
+    // History Section
+    downloadHistory: "Download History",
+    showHistory: "Show",
+    hideHistory: "Hide",
+    resumeHistory: "Resume",
+    deleteHistory: "Delete",
+    historyEmpty: "No download history",
+    historyItemPages: "Pages {start}-{end}",
+    historyItemQuality: "Quality: {quality}",
+    historyItemProgress: "{downloaded}/{total} videos ({percent}%)",
+    historyItemCancelled: "Cancelled",
+    historyItemCompleted: "Completed"
   },
   
   tr: {
@@ -162,7 +176,21 @@ const translations = {
     
     // Language
     language: "Dil:",
-    languageName: "Türkçe"
+    languageName: "Türkçe",
+    openInTab: "Yeni sekmede aç",
+    
+    // History Section
+    downloadHistory: "İndirme Geçmişi",
+    showHistory: "Göster",
+    hideHistory: "Gizle",
+    resumeHistory: "Devam Et",
+    deleteHistory: "Sil",
+    historyEmpty: "İndirme geçmişi yok",
+    historyItemPages: "Sayfa {start}-{end}",
+    historyItemQuality: "Kalite: {quality}",
+    historyItemProgress: "{downloaded}/{total} video (%{percent})",
+    historyItemCancelled: "İptal Edildi",
+    historyItemCompleted: "Tamamlandı"
   },
   
   es: {
@@ -244,7 +272,21 @@ const translations = {
     
     // Language
     language: "Idioma:",
-    languageName: "Español"
+    languageName: "Español",
+    openInTab: "Abrir en nueva pestaña",
+    
+    // History Section
+    downloadHistory: "Historial de descargas",
+    showHistory: "Mostrar",
+    hideHistory: "Ocultar",
+    resumeHistory: "Reanudar",
+    deleteHistory: "Eliminar",
+    historyEmpty: "Sin historial de descargas",
+    historyItemPages: "Páginas {start}-{end}",
+    historyItemQuality: "Calidad: {quality}",
+    historyItemProgress: "{downloaded}/{total} videos ({percent}%)",
+    historyItemCancelled: "Cancelado",
+    historyItemCompleted: "Completado"
   },
   
   fr: {
@@ -326,7 +368,21 @@ const translations = {
     
     // Language
     language: "Langue:",
-    languageName: "Français"
+    languageName: "Français",
+    openInTab: "Ouvrir dans un nouvel onglet",
+    
+    // History Section
+    downloadHistory: "Historique des téléchargements",
+    showHistory: "Afficher",
+    hideHistory: "Masquer",
+    resumeHistory: "Reprendre",
+    deleteHistory: "Supprimer",
+    historyEmpty: "Aucun historique de téléchargement",
+    historyItemPages: "Pages {start}-{end}",
+    historyItemQuality: "Qualité: {quality}",
+    historyItemProgress: "{downloaded}/{total} vidéos ({percent}%)",
+    historyItemCancelled: "Annulé",
+    historyItemCompleted: "Terminé"
   },
   
   zh: {
@@ -408,7 +464,21 @@ const translations = {
     
     // Language
     language: "语言:",
-    languageName: "中文"
+    languageName: "中文",
+    openInTab: "在新标签页中打开",
+    
+    // History Section
+    downloadHistory: "下载历史",
+    showHistory: "显示",
+    hideHistory: "隐藏",
+    resumeHistory: "继续",
+    deleteHistory: "删除",
+    historyEmpty: "无下载历史",
+    historyItemPages: "第 {start}-{end} 页",
+    historyItemQuality: "质量: {quality}",
+    historyItemProgress: "{downloaded}/{total} 视频 ({percent}%)",
+    historyItemCancelled: "已取消",
+    historyItemCompleted: "已完成"
   }
 };
 

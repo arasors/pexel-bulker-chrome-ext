@@ -61,6 +61,14 @@ function applyTranslations() {
       element.placeholder = translations[lang][key];
     }
   });
+  
+  // Update titles (tooltips)
+  document.querySelectorAll('[data-i18n-title]').forEach(element => {
+    const key = element.getAttribute('data-i18n-title');
+    if (translations[lang] && translations[lang][key]) {
+      element.title = translations[lang][key];
+    }
+  });
 }
 
 // Change language
@@ -92,9 +100,16 @@ let allPagesCheckbox;
 let startPageInput;
 let endPageInput;
 let langSelect;
+let historySection;
+let historyList;
+let toggleHistoryBtn;
+let openInTabBtn;
 
 // Download folder setting
 let downloadFolder = 'PexelBulker';
+
+// Download history (max 7 days)
+const MAX_HISTORY_DAYS = 7;
 
 // Detect URL and fetch info
 async function detectAndFetchInfo() {
@@ -243,10 +258,9 @@ async function startScanning() {
       tabId: tab.id
     }
   }, () => {
-    // Process started, update buttons immediately
-    setTimeout(() => {
-      updateControlButtons(false, true);
-    }, 100);
+    // Process started, update buttons immediately and show them
+    isScanning = true;
+    updateControlButtons(false, true);
   });
 }
 
@@ -338,10 +352,11 @@ function updateProgress(data) {
 }
 
 // Update control buttons
-function updateControlButtons(isPaused, isDownloading) {
+function updateControlButtons(isPaused, isActive) {
   const scanBtnText = document.getElementById('scanBtnText');
   
-  if (isDownloading) {
+  // isActive = tarama veya indirme devam ediyor
+  if (isActive || isScanning) {
     if (isPaused) {
       scanBtn.textContent = translations[currentLang].resumeBtn;
       scanBtn.disabled = false;
@@ -352,7 +367,7 @@ function updateControlButtons(isPaused, isDownloading) {
       scanBtn.onclick = pauseDownload;
     }
     
-    // Show cancel button
+    // Show cancel button - ALWAYS show when active
     if (!document.getElementById('cancelBtn')) {
       const cancelBtn = document.createElement('button');
       cancelBtn.id = 'cancelBtn';
@@ -399,17 +414,21 @@ function resumeDownload() {
 // Cancel download
 function cancelDownload() {
   if (confirm(translations[currentLang].logCancelConfirm)) {
-    chrome.runtime.sendMessage({ action: 'cancelDownload' }, () => {
+    chrome.runtime.sendMessage({ action: 'cancelDownload' }, async () => {
       addLog(translations[currentLang].logCancelled, 'info');
       isScanning = false;
       updateControlButtons(false, false);
       showFormSections();
+      
+      // Save to history
+      await saveToHistory('cancelled');
+      await loadDownloadHistory();
     });
   }
 }
 
 // Scan complete
-function onScanComplete(data) {
+async function onScanComplete(data) {
   isScanning = false;
   scanBtn.disabled = false;
   scanBtn.textContent = translations[currentLang].scanBtn;
@@ -426,6 +445,12 @@ function onScanComplete(data) {
   
   // Show form sections again
   showFormSections();
+  
+  // Save to history if completed
+  if (data.successful > 0) {
+    await saveToHistory('completed');
+    await loadDownloadHistory();
+  }
 }
 
 // Add log
@@ -522,6 +547,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     changeFolderBtn.addEventListener('click', changeFolderName);
   }
   
+  historySection = document.getElementById('historySection');
+  historyList = document.getElementById('historyList');
+  toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+  openInTabBtn = document.getElementById('openInTabBtn');
+  
+  if (toggleHistoryBtn) {
+    toggleHistoryBtn.addEventListener('click', toggleHistory);
+  }
+  
+  if (openInTabBtn) {
+    openInTabBtn.addEventListener('click', openInNewTab);
+  }
+  
+  // Load and display history
+  await loadDownloadHistory();
+  
+  // Scroll to bottom after a short delay (so user can see the detect button)
+  setTimeout(() => {
+    scrollToBottom();
+  }, 300);
+  
   // Initialize page range inputs state
   if (startPageInput && endPageInput && allPagesCheckbox) {
     startPageInput.disabled = allPagesCheckbox.checked;
@@ -545,6 +591,216 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   console.log('PexelBulker popup loaded successfully');
 });
+
+// Download History Management
+
+// Save current download to history
+async function saveToHistory(status) {
+  chrome.runtime.sendMessage({ action: 'getState' }, async (response) => {
+    if (!response || !response.stats) return;
+    
+    const historyItem = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      apiBaseUrl: apiBaseUrl,
+      startPage: parseInt(startPageInput?.value) || 1,
+      endPage: parseInt(endPageInput?.value) || totalPages,
+      quality: document.querySelector('input[name="quality"]:checked')?.value || 'uhd',
+      folder: downloadFolder,
+      status: status, // 'completed', 'cancelled', 'paused'
+      stats: {
+        scannedPages: response.stats.scannedPages,
+        totalPages: response.stats.totalPages,
+        downloadedCount: response.stats.downloadedCount,
+        totalDownloads: response.stats.totalDownloads
+      }
+    };
+    
+    // Load existing history
+    const result = await chrome.storage.local.get(['downloadHistory']);
+    let history = result.downloadHistory || [];
+    
+    // Clean old history (older than 7 days)
+    const sevenDaysAgo = Date.now() - (MAX_HISTORY_DAYS * 24 * 60 * 60 * 1000);
+    history = history.filter(item => new Date(item.date).getTime() > sevenDaysAgo);
+    
+    // Add new item
+    history.unshift(historyItem);
+    
+    // Keep max 20 items
+    if (history.length > 20) {
+      history = history.slice(0, 20);
+    }
+    
+    // Save
+    await chrome.storage.local.set({ downloadHistory: history });
+  });
+}
+
+// Load and display download history
+async function loadDownloadHistory() {
+  const result = await chrome.storage.local.get(['downloadHistory']);
+  let history = result.downloadHistory || [];
+  
+  // Clean old history
+  const sevenDaysAgo = Date.now() - (MAX_HISTORY_DAYS * 24 * 60 * 60 * 1000);
+  history = history.filter(item => new Date(item.date).getTime() > sevenDaysAgo);
+  
+  // Save cleaned history
+  if (history.length !== result.downloadHistory?.length) {
+    await chrome.storage.local.set({ downloadHistory: history });
+  }
+  
+  // Show history section if there are items
+  if (history.length > 0 && historySection) {
+    historySection.style.display = 'block';
+  }
+  
+  // Display history
+  displayHistory(history);
+}
+
+// Display history items
+function displayHistory(history) {
+  if (!historyList) return;
+  
+  if (history.length === 0) {
+    historyList.innerHTML = `<div class="history-empty">${translations[currentLang].historyEmpty}</div>`;
+    return;
+  }
+  
+  historyList.innerHTML = '';
+  
+  history.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    
+    const date = new Date(item.date);
+    const timeAgo = getTimeAgo(date);
+    
+    const percent = item.stats.totalDownloads > 0 
+      ? Math.round((item.stats.downloadedCount / item.stats.totalDownloads) * 100)
+      : 0;
+    
+    const statusText = item.status === 'completed' 
+      ? translations[currentLang].historyItemCompleted
+      : translations[currentLang].historyItemCancelled;
+    
+    div.innerHTML = `
+      <div class="history-item-header">
+        <span class="history-item-title">${statusText}</span>
+        <span class="history-item-date">${timeAgo}</span>
+      </div>
+      <div class="history-item-info">
+        ${translations[currentLang].historyItemPages
+          .replace('{start}', item.startPage)
+          .replace('{end}', item.endPage)}
+        • ${translations[currentLang].historyItemQuality.replace('{quality}', item.quality.toUpperCase())}
+      </div>
+      <div class="history-item-progress">
+        ${translations[currentLang].historyItemProgress
+          .replace('{downloaded}', item.stats.downloadedCount)
+          .replace('{total}', item.stats.totalDownloads)
+          .replace('{percent}', percent)}
+      </div>
+      <div class="history-item-actions">
+        ${item.status !== 'completed' && percent < 100 ? `
+          <button class="btn-resume-history" onclick="resumeFromHistory(${item.id})">
+            ${translations[currentLang].resumeHistory}
+          </button>
+        ` : ''}
+        <button class="btn-delete-history" onclick="deleteFromHistory(${item.id})">
+          ${translations[currentLang].deleteHistory}
+        </button>
+      </div>
+    `;
+    
+    historyList.appendChild(div);
+  });
+}
+
+// Toggle history visibility
+function toggleHistory() {
+  if (!historyList || !toggleHistoryBtn) return;
+  
+  if (historyList.style.display === 'none') {
+    historyList.style.display = 'block';
+    toggleHistoryBtn.textContent = translations[currentLang].hideHistory;
+  } else {
+    historyList.style.display = 'none';
+    toggleHistoryBtn.textContent = translations[currentLang].showHistory;
+  }
+}
+
+// Resume download from history
+window.resumeFromHistory = async function(itemId) {
+  const result = await chrome.storage.local.get(['downloadHistory']);
+  const history = result.downloadHistory || [];
+  const item = history.find(h => h.id === itemId);
+  
+  if (!item) return;
+  
+  // Restore settings
+  apiBaseUrl = item.apiBaseUrl;
+  downloadFolder = item.folder;
+  
+  if (startPageInput) startPageInput.value = item.startPage;
+  if (endPageInput) endPageInput.value = item.endPage;
+  if (folderPathInput) folderPathInput.value = item.folder;
+  
+  // Set quality
+  const qualityRadio = document.querySelector(`input[name="quality"][value="${item.quality}"]`);
+  if (qualityRadio) qualityRadio.checked = true;
+  
+  addLog(`Resuming download: Pages ${item.startPage}-${item.endPage}`, 'info');
+  
+  // Start scanning
+  await startScanning();
+}
+
+// Delete item from history
+window.deleteFromHistory = async function(itemId) {
+  const result = await chrome.storage.local.get(['downloadHistory']);
+  let history = result.downloadHistory || [];
+  
+  history = history.filter(h => h.id !== itemId);
+  
+  await chrome.storage.local.set({ downloadHistory: history });
+  await loadDownloadHistory();
+  
+  addLog('History item deleted', 'info');
+}
+
+// Get time ago string
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+}
+
+// Open extension in new tab
+function openInNewTab() {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL('popup.html')
+  });
+  
+  // Close the popup
+  window.close();
+}
+
+// Scroll to bottom of container
+function scrollToBottom() {
+  const container = document.querySelector('.container');
+  if (container) {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+}
 
 // Restore state
 async function restoreState() {
